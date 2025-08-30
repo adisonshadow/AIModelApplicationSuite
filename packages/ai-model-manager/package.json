@@ -1,0 +1,20 @@
+{
+  "name": "@ai-model-manager",
+  "version": "1.0.0",
+  "description": "AI模型配置和管理组件包",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    }
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

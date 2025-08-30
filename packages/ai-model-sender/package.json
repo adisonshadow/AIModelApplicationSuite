@@ -1,0 +1,35 @@
+{
+  "name": "@ai-model-sender",
+  "version": "1.0.0",
+  "description": "统一 AI 模型接口调用包",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "openai": "^4.28.0",
+    "@ai-sdk/openai": "^0.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "rimraf": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@ai-model-manager": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "ai",
+    "model",
+    "sender",
+    "openai",
+    "volcengine"
+  ],
+  "author": "",
+  "license": "MIT"
+}
