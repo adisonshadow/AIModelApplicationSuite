@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bubble, Sender } from '@ant-design/x';
+import { Bubble, Sender, Attachments, AttachmentsProps } from '@ant-design/x';
 import { createAIModelSender } from '../../packages/ai-model-sender';
 import type { AIModelSender as IAIModelSender } from '../../packages/ai-model-sender';
 
-import { Typography } from 'antd';
+import { Typography, Flex, Button, Divider, Switch, message, Badge, App, type GetProp, type GetRef } from 'antd';
+import { LinkOutlined, ApiOutlined, CloudUploadOutlined } from '@ant-design/icons';
+
 import type { BubbleProps } from '@ant-design/x';
 
 import markdownit from 'markdown-it';
@@ -133,22 +135,6 @@ interface ChatResponse {
   created: number;
 }
 
-interface CompletionResponse {
-  id: string;
-  model: string;
-  choices: Array<{
-    index: number;
-    text: string;
-    finishReason: string;
-  }>;
-  usage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  created: number;
-}
-
 // AI模型配置接口 - 与AIModelSelector保持一致
 interface AIModelConfig {
   id: string;
@@ -232,13 +218,17 @@ const AIModelSender: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   // 发送模式
-  const [sendMode, setSendMode] = useState<'chat' | 'completion'>('chat');
   const [streamMode, setStreamMode] = useState(true); // 默认启用流式响应
   
   // 提示词模板配置
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>('');
   const [customPrompt, setCustomPrompt] = useState<string>('');
-  
+
+  // 附件配置
+  const [open, setOpen] = React.useState(false);
+  const [items, setItems] = React.useState<GetProp<AttachmentsProps, 'items'>>([]);
+  const { notification } = App.useApp();
+
   // 内置提示词模板
   const promptTemplates = [
     {
@@ -278,10 +268,14 @@ const AIModelSender: React.FC = () => {
   
   // 响应相关
   const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null);
-  const [lastCompletion, setLastCompletion] = useState<CompletionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const iconStyle = {
+    color: '#666',
+    fontSize: '1.2rem'
+  };
 
   // 自动滚动到底部
   const scrollToBottom = () => {
@@ -549,91 +543,10 @@ const AIModelSender: React.FC = () => {
     }
   };
 
-  // 发送补全请求
-  const sendCompletion = async () => {
-    if (!inputMessage.trim() || !selectedModelId) return;
-    
-    const selectedConfig = configs.find(c => c.id === selectedModelId);
-    if (!selectedConfig) {
-      setError('请先选择一个AI模型配置');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    // 控制台日志：发送补全请求
-    console.log('🔄 发送补全请求:', {
-      timestamp: new Date().toISOString(),
-      mode: '文本补全',
-      userPrompt: inputMessage,
-      selectedConfig: {
-        id: selectedConfig.id,
-        name: selectedConfig.name,
-        provider: selectedConfig.provider,
-        model: selectedConfig.config.model,
-        baseURL: selectedConfig.config.baseURL
-      },
-      requestOptions: {
-        stream: false,
-        model: selectedConfig.config.model,
-        jsonParams: selectedConfig.config.jsonParams
-      }
-    });
-
-    try {
-      const sender = createRealAISender(selectedConfig);
-      
-      const options: SendOptions = {
-        stream: false,
-        model: selectedConfig.config.model,
-        jsonParams: selectedConfig.config.jsonParams
-      };
-
-      console.log('📤 发送补全请求到服务器...');
-      const response: any = await sender.sendCompletion(inputMessage, options);
-      setLastCompletion(response);
-      
-      // 控制台日志：收到补全响应
-      console.log('📥 收到补全响应:', {
-        timestamp: new Date().toISOString(),
-        responseId: response.id,
-        model: response.model,
-        completionText: response.choices[0]?.text,
-        usage: response.usage,
-        finishReason: response.choices[0]?.finishReason
-      });
-      
-      const completionMessage: ChatMessage = {
-        role: 'assistant',
-        content: `补全结果: ${response.choices[0]?.text || '无结果'}`
-      };
-      setMessages(prev => [...prev, completionMessage]);
-      
-      console.log('✅ 补全请求完成');
-    } catch (err: any) {
-      const errorMessage = `补全失败: ${err.message}`;
-      setError(errorMessage);
-      
-      // 控制台日志：补全错误信息
-      console.error('❌ 补全请求失败:', {
-        timestamp: new Date().toISOString(),
-        error: err.message,
-        stack: err.stack,
-        userPrompt: inputMessage,
-        selectedConfig: selectedConfig.id
-      });
-    } finally {
-      setIsLoading(false);
-      console.log('🏁 补全请求处理完成');
-    }
-  };
-
   // 清空聊天记录
   const clearChat = () => {
     setMessages([{ role: 'system', content: '你好！我是AI助手，有什么可以帮助你的吗？' }]);
     setLastResponse(null);
-    setLastCompletion(null);
     setError(null);
   };
 
@@ -641,11 +554,7 @@ const AIModelSender: React.FC = () => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (sendMode === 'chat') {
-        sendChatMessage();
-      } else {
-        sendCompletion();
-      }
+      sendChatMessage();
     }
   };
 
@@ -661,11 +570,46 @@ const AIModelSender: React.FC = () => {
   // 获取当前选中的配置
   const selectedConfig = configs.find(c => c.id === selectedModelId);
 
+  const senderRef = React.useRef<GetRef<typeof Sender>>(null);
+
+  const senderHeader = (
+    <Sender.Header
+      title="Attachments"
+      open={open}
+      onOpenChange={setOpen}
+      styles={{
+        content: {
+          padding: 0,
+        },
+      }}
+    >
+      <Attachments
+        // Mock not real upload file
+        beforeUpload={() => false}
+        items={items}
+        onChange={({ fileList }) => setItems(fileList)}
+        placeholder={(type) =>
+          type === 'drop'
+            ? {
+                title: 'Drop file here',
+              }
+            : {
+                icon: <CloudUploadOutlined />,
+                title: 'Upload files',
+                description: 'Click or drag files to this area to upload',
+              }
+        }
+        getDropContainer={() => senderRef.current?.nativeElement}
+      />
+    </Sender.Header>
+  );
+
+
   return (
     <div className="ai-model-sender">
       {/* <div className="sender-header">
         <h1>🤖 AI模型发送器</h1>
-        <p>这是一个完整的AI模型发送器演示页面，支持聊天对话、文本补全等功能</p>
+        <p>这是一个完整的AI模型发送器演示页面，支持聊天对话功能</p>
       </div> */}
 
       <div className="sender-container">
@@ -719,51 +663,11 @@ const AIModelSender: React.FC = () => {
             </div> */}
           </div>
 
-          <div className="sidebar-section">
+          {/* <div className="sidebar-section">
             <h3>🎯 发送模式</h3>
             
             <div className="mode-selector">
               <div className="mode-option">
-                <label>
-                  <input
-                    type="radio"
-                    name="sendMode"
-                    value="chat"
-                    checked={sendMode === 'chat'}
-                    onChange={(e) => setSendMode(e.target.value as 'chat' | 'completion')}
-                  />
-                  聊天模式
-                </label>
-                <small>支持多轮对话，上下文连贯</small>
-                <div style={{ marginLeft: '1rem', marginTop: '0.5rem' }}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={streamMode}
-                      onChange={(e) => setStreamMode(e.target.checked)}
-                    />
-                    🚰 启用流式响应
-                  </label>
-                </div>
-              </div>
-              
-              <div className="mode-option">
-                <label>
-                  <input
-                    type="radio"
-                    name="sendMode"
-                    value="completion"
-                    checked={sendMode === 'completion'}
-                    onChange={(e) => setSendMode(e.target.value as 'chat' | 'completion')}
-                  />
-                  补全模式
-                </label>
-                <small>单次文本续写，适合短文本</small>
-              </div>
-            </div>
-
-            {/* {sendMode === 'chat' && (
-              <div className="stream-option">
                 <label>
                   <input
                     type="checkbox"
@@ -774,8 +678,8 @@ const AIModelSender: React.FC = () => {
                 </label>
                 <small>实时显示AI回复内容，体验更流畅</small>
               </div>
-            )} */}
-          </div>
+            </div>
+          </div> */}
 
           <div className="sidebar-section">
             <h3>🎭 开发用提示词追加</h3>
@@ -850,49 +754,46 @@ const AIModelSender: React.FC = () => {
               <div className="stat-item">
                 <span className="stat-label">当前模式:</span>
                 <span className="stat-value">
-                  {sendMode === 'chat' ? (streamMode ? '流式聊天' : '普通聊天') : '文本补全'}
+                  {streamMode ? '流式聊天' : '普通聊天'}
                 </span>
               </div>
             </div>
 
             {/* 响应信息显示 */}
-            {(lastResponse || lastCompletion) && (
+            {lastResponse && (
               <div className="response-info">
                 <h4>📋 响应信息</h4>
-                {lastResponse && (
-                  <div className="info-item">
-                    <strong>聊天响应:</strong>
-                    <div className="info-details">
-                      <span>模型: {lastResponse.model}</span>
-                      <span>ID: {lastResponse.id}</span>
-                      <span>Token: {lastResponse.usage?.totalTokens || 0}</span>
-                      <span>模式: {streamMode ? '流式' : '普通'}</span>
-                    </div>
+                <div className="info-item">
+                  <strong>聊天响应:</strong>
+                  <div className="info-details">
+                    <span>模型: {lastResponse.model}</span>
+                    <span>ID: {lastResponse.id}</span>
+                    <span>Token: {lastResponse.usage?.totalTokens || 0}</span>
+                    <span>模式: {streamMode ? '流式' : '普通'}</span>
                   </div>
-                )}
-                {lastCompletion && (
-                  <div className="info-item">
-                    <strong>补全响应:</strong>
-                    <div className="info-details">
-                      <span>模型: {lastCompletion.model}</span>
-                      <span>ID: {lastCompletion.id}</span>
-                      <span>Token: {lastCompletion.usage?.totalTokens || 0}</span>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             )}
+
+            {/* 错误显示 */}
+            {error && (
+              <div className="error-message">
+                <span className="error-icon">❌</span>
+                <span className="error-text">{error}</span>
+              </div>
+            )}
+
           </div>
         </div>
 
         {/* 右侧：聊天界面 */}
         <div className="sender-main">
           <div className="chat-container">
-            <div className="chat-header">
-              <h3>
-                {sendMode === 'chat' ? '💬 AI对话' : '🔄 文本补全'}
-                {sendMode === 'chat' && streamMode && <span className="stream-badge">🌊 流式</span>}
-              </h3>
+                          <div className="chat-header">
+                <h3>
+                  💬 AI对话
+                  {streamMode && <span className="stream-badge">🚰 流式</span>}
+                </h3>
               <div className="chat-actions">
                 <button
                   className="action-btn secondary"
@@ -957,44 +858,75 @@ const AIModelSender: React.FC = () => {
             {/* 使用 Ant Design X 的 Sender 组件 */}
             <div className="chat-input-container">
               <Sender
+                ref={senderRef}
+                header={senderHeader}
+                prefix={
+                  <Badge dot={items.length > 0 && !open}>
+                    <Button onClick={() => setOpen(!open)} icon={<LinkOutlined />} />
+                  </Badge>
+                }
                 value={inputMessage}
                 onChange={setInputMessage}
-                onSubmit={sendMode === 'chat' ? sendChatMessage : sendCompletion}
-                placeholder={
-                  sendMode === 'chat' 
-                    ? "输入你的消息... (Shift+Enter换行，Enter发送)" 
-                    : "输入要补全的文本... (Shift+Enter换行，Enter补全)"
-                }
+                onSubmit={() => {
+                  setIsLoading(true);
+                  sendChatMessage();
+                }}
+                placeholder="输入你的消息... (Shift+Enter换行，Enter发送)"
                 disabled={isLoading}
-                submitType={sendMode === 'chat' ? 'enter' : 'enter'}
-                onKeyDown={handleKeyPress}
-                onFocus={() => {}}
-                onBlur={() => {}}
+                // submitType="enter"
+                // onKeyDown={handleKeyPress}
+                autoSize={{ minRows: 2, maxRows: 6 }}
+                // onFocus={() => {}}
+                // onBlur={() => {}}
+                footer={({ components }) => {
+                  const { SendButton, LoadingButton, SpeechButton } = components;
+                  return (
+                    <Flex justify="space-between" align="center">
+                      <Flex gap="small" align="center">
+                        <Attachments
+                          beforeUpload={() => false}
+                          onChange={({ file }) => {
+                            message.info(`Mock upload: ${file.name}`);
+                          }}
+                          getDropContainer={() => document.body}
+                          placeholder={{
+                            icon: <CloudUploadOutlined />,
+                            title: 'Drag & Drop files here',
+                            description: 'Support file type: image, video, audio, document, etc.',
+                          }}
+                        >
+                          <Button type="text" icon={<LinkOutlined />} />
+                        </Attachments>
+                        <Divider type="vertical" />
+                        <label>
+                          流式聊天
+                          <Switch size="small"  checked={streamMode} onChange={(checked) => setStreamMode(checked)} />
+                        </label>
+                      </Flex>
+                      <Flex align="center">
+                        <Button type="text" style={iconStyle} icon={<ApiOutlined />} />
+                        <Divider type="vertical" />
+                        <SpeechButton style={iconStyle} />
+                        <Divider type="vertical" />
+                        {isLoading ? (
+                          <LoadingButton type="default" />
+                        ) : (
+                          <SendButton type="primary" disabled={false} />
+                        )}
+                      </Flex>
+                    </Flex>
+                  );
+                }}
+                onCancel={() => {
+                  setIsLoading(false);
+                }}
+                actions={false}
+                // prefix={}
               />
-              
-              {/* 自定义发送按钮 */}
-              {/* <div className="input-actions" style={{ marginTop: '8px' }}>
-                <button
-                  className="action-btn primary"
-                  onClick={sendMode === 'chat' ? sendChatMessage : sendCompletion}
-                  disabled={!inputMessage.trim() || !selectedModelId || isLoading}
-                >
-                  {isLoading ? '⏳ 发送中...' : 
-                   sendMode === 'chat' ? 
-                     (streamMode ? '🌊 流式发送' : '📤 发送消息') : 
-                     '🔄 文本补全'}
-                </button>
-              </div> */}
             </div>
           </div>
 
-          {/* 错误显示 */}
-          {error && (
-            <div className="error-message">
-              <span className="error-icon">❌</span>
-              <span className="error-text">{error}</span>
-            </div>
-          )}
+          
         </div>
       </div>
     </div>
