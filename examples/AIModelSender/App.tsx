@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bubble, Sender, Attachments, AttachmentsProps } from '@ant-design/x';
+import { Bubble, Sender, Suggestion, Attachments, AttachmentsProps } from '@ant-design/x';
 import { createAIModelSender } from '../../packages/ai-model-sender';
 import type { AIModelSender as IAIModelSender } from '../../packages/ai-model-sender';
 
-import { Typography, Flex, Button, Divider, Switch, message, Badge, App, type GetProp, type GetRef } from 'antd';
-import { LinkOutlined, ApiOutlined, CloudUploadOutlined } from '@ant-design/icons';
+import { Typography, Flex, Button, Divider, Switch, Badge, App, type GetProp, type GetRef } from 'antd';
+import { LinkOutlined, ApiOutlined, CloudUploadOutlined, ReadOutlined } from '@ant-design/icons';
 
 import type { BubbleProps } from '@ant-design/x';
 
@@ -206,6 +206,30 @@ const createRealAISender = (config: AIModelConfig): IAIModelSender => {
   }
 };
 
+type SuggestionItems = Exclude<GetProp<typeof Suggestion, 'items'>, () => void>;
+
+const suggestions: SuggestionItems = [
+  { label: 'Write a report', value: 'report' },
+  { label: 'Draw a picture', value: 'draw' },
+  {
+    label: 'Check some knowledge',
+    value: 'knowledge',
+    icon: <ReadOutlined />,
+    children: [
+      {
+        label: 'About React',
+        value: 'react',
+      },
+      {
+        label: 'About Ant Design',
+        value: 'antd',
+      },
+    ],
+  },
+];
+
+
+
 const AIModelSender: React.FC = () => {
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [configs, setConfigs] = useState<AIModelConfig[]>([]);
@@ -227,7 +251,9 @@ const AIModelSender: React.FC = () => {
   // 附件配置
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<GetProp<AttachmentsProps, 'items'>>([]);
-  const { notification } = App.useApp();
+  
+  // 提示词配置
+  // const [suggestionValue, setSuggestionValue] = useState<string>('');
 
   // 内置提示词模板
   const promptTemplates = [
@@ -758,32 +784,38 @@ const AIModelSender: React.FC = () => {
                 </span>
               </div>
             </div>
+          </div>
 
-            {/* 响应信息显示 */}
-            {lastResponse && (
-              <div className="response-info">
-                <h4>📋 响应信息</h4>
+          {/* 响应信息显示 */}
+          {lastResponse && (
+              <div className="sidebar-section">
+                <h3>📋 响应信息</h3>
                 <div className="info-item">
                   <strong>聊天响应:</strong>
                   <div className="info-details">
                     <span>模型: {lastResponse.model}</span>
-                    <span>ID: {lastResponse.id}</span>
-                    <span>Token: {lastResponse.usage?.totalTokens || 0}</span>
-                    <span>模式: {streamMode ? '流式' : '普通'}</span>
+                    <span style={{ wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>ID: {lastResponse.id}</span>
+                    {/* <span>Token: {lastResponse.usage?.totalTokens || 0}</span>
+                    <span>模式: {streamMode ? '流式' : '普通'}</span> */}
                   </div>
+
+                  {/* 错误显示 */}
+                  {error && (
+                    <div className="error-message">
+                      <span className="error-icon">❌</span>
+                      <span className="error-text">{error}</span>
+                    </div>
+                  )}
+
                 </div>
               </div>
             )}
 
-            {/* 错误显示 */}
-            {error && (
-              <div className="error-message">
-                <span className="error-icon">❌</span>
-                <span className="error-text">{error}</span>
-              </div>
-            )}
+            
 
-          </div>
+
+
+
         </div>
 
         {/* 右侧：聊天界面 */}
@@ -839,7 +871,7 @@ const AIModelSender: React.FC = () => {
                 style={{ height: '100%' }}
               />
               
-              {isLoading && (
+              {/* {isLoading && (
                 <Bubble
                   role="assistant"
                   content={streamMode ? '正在流式生成回复...' : '正在思考中...'}
@@ -850,79 +882,94 @@ const AIModelSender: React.FC = () => {
                   messageRender={renderMarkdown}
                   typing
                 />
-              )}
+              )} */}
               
               <div ref={messagesEndRef} />
             </div>
 
             {/* 使用 Ant Design X 的 Sender 组件 */}
             <div className="chat-input-container">
-              <Sender
-                ref={senderRef}
-                header={senderHeader}
-                prefix={
-                  <Badge dot={items.length > 0 && !open}>
-                    <Button onClick={() => setOpen(!open)} icon={<LinkOutlined />} />
-                  </Badge>
-                }
-                value={inputMessage}
-                onChange={setInputMessage}
-                onSubmit={() => {
-                  setIsLoading(true);
-                  sendChatMessage();
+              <Suggestion
+                items={suggestions}
+                onSelect={(itemVal) => {
+                  setInputMessage(`[${itemVal}]:`);
                 }}
-                placeholder="输入你的消息... (Shift+Enter换行，Enter发送)"
-                disabled={isLoading}
-                // submitType="enter"
-                // onKeyDown={handleKeyPress}
-                autoSize={{ minRows: 2, maxRows: 6 }}
-                // onFocus={() => {}}
-                // onBlur={() => {}}
-                footer={({ components }) => {
-                  const { SendButton, LoadingButton, SpeechButton } = components;
+              >
+                {({ onTrigger, onKeyDown }) => {
                   return (
-                    <Flex justify="space-between" align="center">
-                      <Flex gap="small" align="center">
-                        <Attachments
-                          beforeUpload={() => false}
-                          onChange={({ file }) => {
-                            message.info(`Mock upload: ${file.name}`);
-                          }}
-                          getDropContainer={() => document.body}
-                          placeholder={{
-                            icon: <CloudUploadOutlined />,
-                            title: 'Drag & Drop files here',
-                            description: 'Support file type: image, video, audio, document, etc.',
-                          }}
-                        >
-                          <Button type="text" icon={<LinkOutlined />} />
-                        </Attachments>
-                        <Divider type="vertical" />
-                        <label>
-                          流式聊天
-                          <Switch size="small"  checked={streamMode} onChange={(checked) => setStreamMode(checked)} />
-                        </label>
-                      </Flex>
-                      <Flex align="center">
-                        <Button type="text" style={iconStyle} icon={<ApiOutlined />} />
-                        <Divider type="vertical" />
-                        <SpeechButton style={iconStyle} />
-                        <Divider type="vertical" />
-                        {isLoading ? (
-                          <LoadingButton type="default" />
-                        ) : (
-                          <SendButton type="primary" disabled={false} />
-                        )}
-                      </Flex>
-                    </Flex>
-                  );
-                }}
-                onCancel={() => {
-                  setIsLoading(false);
-                }}
-                actions={false}
-                // prefix={}
-              />
+                    <Sender
+                      ref={senderRef}
+                      header={senderHeader}
+                      // prefix={null}
+                      value={inputMessage}
+                      onChange={(nextVal) => {
+                        if (nextVal === '/') {
+                          onTrigger();
+                        } else if (!nextVal) {
+                          onTrigger(false);
+                        }
+                        setInputMessage(nextVal);
+                      }}
+                      onSubmit={() => {
+                        setIsLoading(true);
+                        sendChatMessage();
+                      }}
+                      placeholder="输入你的消息... 输入 / 获取建议... (Shift+Enter换行，Enter发送)"
+                      disabled={isLoading}
+                      // submitType="enter"
+                      // onKeyDown={handleKeyPress}
+                      autoSize={{ minRows: 2, maxRows: 6 }}
+                      // onFocus={() => {}}
+                      // onBlur={() => {}}
+                      footer={({ components }) => {
+                        const { SendButton, LoadingButton, SpeechButton } = components;
+                        return (
+                          <Flex justify="space-between" align="center">
+                            <Flex gap="small" align="center">
+                              {/* <Attachments
+                                beforeUpload={() => false}
+                                onChange={({ file }) => {
+                                  message.info(`Mock upload: ${file.name}`);
+                                }}
+                                getDropContainer={() => document.body}
+                                placeholder={{
+                                  icon: <CloudUploadOutlined />,
+                                  title: 'Drag & Drop files here',
+                                  description: 'Support file type: image, video, audio, document, etc.',
+                                }}
+                              >
+                                <Button type="text" icon={<LinkOutlined />} />
+                              </Attachments> */}
+                              <Badge dot={items.length > 0 && !open}>
+                                <Button onClick={() => setOpen(!open)} icon={<LinkOutlined />} />
+                              </Badge>
+                              <Divider type="vertical" />
+                              <label>
+                                流式聊天
+                                <Switch size="small"  checked={streamMode} onChange={(checked) => setStreamMode(checked)} />
+                              </label>
+                            </Flex>
+                            <Flex align="center">
+                              <Button type="text" style={iconStyle} icon={<ApiOutlined />} />
+                              <Divider type="vertical" />
+                              <SpeechButton style={iconStyle} />
+                              <Divider type="vertical" />
+                              {isLoading ? (
+                                <LoadingButton type="default" />
+                              ) : (
+                                <SendButton type="primary" disabled={false} />
+                              )}
+                            </Flex>
+                          </Flex>
+                        );
+                      }}
+                      onCancel={() => {
+                        setIsLoading(false);
+                      }}
+                      actions={false}
+                    />
+                  )}}
+              </Suggestion>
             </div>
           </div>
 
