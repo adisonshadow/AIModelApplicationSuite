@@ -1,284 +1,67 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bubble, Sender, Suggestion, Attachments, AttachmentsProps } from '@ant-design/x';
+import type { BubbleProps } from '@ant-design/x';
+
+import { Flex, Button, Divider, Switch, Badge, type GetProp, type GetRef } from 'antd';
+import { LinkOutlined, ApiOutlined, CloudUploadOutlined, ReadOutlined } from '@ant-design/icons';
+
+import Markdown from 'react-markdown'
+
+// AI模型发送器
 import { createAIModelSender } from '../../packages/ai-model-sender';
 import type { AIModelSender as IAIModelSender } from '../../packages/ai-model-sender';
 
-import { Typography, Flex, Button, Divider, Switch, Badge, App, type GetProp, type GetRef } from 'antd';
-import { LinkOutlined, ApiOutlined, CloudUploadOutlined, ReadOutlined } from '@ant-design/icons';
-
-import type { BubbleProps } from '@ant-design/x';
-
-// markdown 渲染 - 暂时注释掉，使用 messageRender 自动实现
-// import markdownit from 'markdown-it';
-// const md = markdownit({ html: true, breaks: true });
-
-// 代码块 渲染 - 保留，用于在 messageRender 中渲染代码块
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-// 代码块 方案二 
-// import hljs from 'highlight.js'
-
 // Chart 渲染
-import { GPTVis  } from '@antv/gpt-vis';
+// import { GPTVis  } from '@antv/gpt-vis';
+import { withChartCode, withDefaultChartCode, ChartType, Line } from '@antv/gpt-vis';
+import remarkGfm from 'remark-gfm';
+
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'; // dracula  // https://react-syntax-highlighter.github.io/react-syntax-highlighter/demo/prism.html
+
+
+const CodeBlock = withChartCode({
+  components: { [ChartType.Line]: Line },
+});
 
 // 智能渲染器 - 结合 GPTVis 和代码块渲染
-const SmartRenderer: BubbleProps['messageRender'] = (content) => {
-  // 检测是否包含代码块
-  const hasCodeBlock = /```[\s\S]*?```/.test(content);
-  
+const SmartRenderer: BubbleProps['messageRender'] = (content) => {  
   // 统一设置 minWidth，确保内容有足够的显示空间
   const containerStyle = { 
     minWidth: '600px',
     width: '100%'
   };
-  
-  if (hasCodeBlock) {
-    // 如果有代码块，使用 GPTVis 渲染（GPTVis 会自动处理代码块）
-    return (
-      <div style={containerStyle}>
-        <GPTVis>{content}</GPTVis>
-      </div>
-    );
-  } else {
-    // 如果没有代码块，直接使用 GPTVis
-    return (
-      <div style={containerStyle}>
-        <GPTVis>{content}</GPTVis>
-      </div>
-    );
-  }
-};
 
-// 原有的复杂渲染逻辑 - 暂时注释掉，保留以备不时之需
-// 由于语法错误，暂时完全注释掉，只保留SimpleRenderer
-
-// 渲染器类型定义
-// interface RenderPart {
-//   type: 'markdown' | 'code' | 'chart';
-//   content?: string;
-//   language?: string;
-//   code?: string;
-//   chartData?: any;
-// }
-
-// 图表渲染器 - 使用 GPTVis
-// const ChartRenderer: React.FC<{ data: any }> = ({ data }) => {
-//   try {
-//     // 将数据转换为 GPTVis 需要的格式
-//     const gptVisData = {
-//       type: data.type || 'line',
-//       data: data.data || [],
-//       axisXTitle: data.axisXTitle || 'X轴',
-//       axisYTitle: data.axisYTitle || 'Y轴',
-//       title: data.title || '图表'
-//     };
-
-//     return (
-//       <div className="chart-container" style={{ margin: '1rem 0', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-//         <div className="chart-header" style={{ marginBottom: '1rem', padding: '0.5rem', background: '#f8fafc', borderRadius: '4px' }}>
-//           <strong>📊 图表展示 (GPTVis)</strong>
-//           <small style={{ display: 'block', color: '#666', marginTop: '0.25rem' }}>
-//             类型: {gptVisData.type} | 数据点: {Array.isArray(gptVisData.data) ? gptVisData.data.length : 0}
-//           </small>
-//         </div>
-//         <div className="chart-content" style={{ 
-//           width: '100%', 
-//           height: '400px',
-//           border: '1px solid #e2e8f0',
-//           borderRadius: '4px',
-//           overflow: 'hidden',
-//           position: 'relative'
-//         }}>
-//           {/* 使用 GPTVis 渲染图表 - 正确的方式 */}
-//           <GPTVis>
-//             {JSON.stringify(gptVisData, null, 2)}
-//           </GPTVis>
-//         </div>
-//         <div className="chart-data" style={{ marginTop: '1rem', padding: '0.5rem', background: '#f1f5f9', borderRadius: '4px', fontSize: '0.8rem' }}>
-//           <details>
-//             <summary style={{ cursor: 'pointer', fontWeight: '500' }}>📋 查看图表数据</summary>
-//             <pre style={{ marginTop: '0.5rem', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-//               {JSON.stringify(gptVisData, null, 2)}
-//             </pre>
-//           </details>
-//         </div>
-//       </div>
-//     );
-//   } catch (error) {
-//     console.error('图表渲染失败:', error);
-//     return (
-//       <div className="chart-error" style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '4px', color: '#dc2626' }}>
-//         ❌ 图表渲染失败: {error instanceof Error ? error.message : '未知错误'}
-//         <details style={{ marginTop: '0.5rem' }}>
-//           <summary>查看原始数据</summary>
-//           <pre style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
-//             {JSON.stringify(data, null, 2)}
-//           </pre>
-//         </details>
-//       </div>
-//     );
-//   }
-// };
-
-// 代码块渲染器 - 保留，用于在需要时手动渲染代码块
-const CodeBlock: React.FC<{ code: string, language: string }> = ({ code, language }) => {
   return (
-    <SyntaxHighlighter
-      language={language}
-      style={vscDarkPlus}
-      wrapLongLines={true}
-    >
-      {code}
-    </SyntaxHighlighter>
+    <div style={containerStyle}>
+      <Markdown 
+        remarkPlugins={[remarkGfm]} 
+        components={{ 
+          // code: CodeBlock 
+          code(props) {
+            const {children, className, node, ...rest} = props
+            const match = /language-(\w+)/.exec(className || '')
+            return match ? (
+              <SyntaxHighlighter
+                {...rest}
+                PreTag="div"
+                children={String(children).replace(/\n$/, '')}
+                language={match[1]}
+                style={vscDarkPlus}
+              />
+            ) : (
+              <code {...rest} className={className}>
+                {children}
+              </code>
+            )
+          }
+        }}>{content}</Markdown>
+    </div>
   );
+
 };
 
-// 智能内容解析器 - 暂时注释掉，使用 GPTVis 自动处理
-/*
-const parseContent = (content: string): RenderPart[] => {
-  const parts: RenderPart[] = [];
-  let lastIndex = 0;
-  
-  // 1. 检测图表块
-  const chartRegex = /```vis-chart\s*\n([\s\S]*?)```/g;
-  let chartMatch;
-  
-  while ((chartMatch = chartRegex.exec(content)) !== null) {
-    // 添加图表之前的markdown内容
-    if (chartMatch.index > lastIndex) {
-      const markdownContent = content.slice(lastIndex, chartMatch.index);
-      if (markdownContent.trim()) {
-        parts.push({
-          type: 'markdown',
-          content: markdownContent
-        });
-      }
-    }
-    
-    // 添加图表
-    try {
-      const chartData = JSON.parse(chartMatch[1]);
-      parts.push({
-        type: 'chart',
-        chartData
-      });
-    } catch (error) {
-      console.error('图表数据解析失败:', error);
-      // 如果解析失败，作为代码块显示
-      parts.push({
-        type: 'code',
-        language: 'json',
-        code: chartMatch[1]
-      });
-    }
-    
-    lastIndex = chartMatch.index + chartMatch[0].length;
-  }
-  
-  // 2. 检测代码块（排除已处理的图表块）
-  const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-  let codeMatch;
-  
-  while ((codeMatch = codeBlockRegex.exec(content)) !== null) {
-    // 跳过已经处理的图表块
-    if (codeMatch[0].includes('vis-chart')) {
-      continue;
-    }
-    
-    // 添加代码块之前的markdown内容
-    if (codeMatch.index > lastIndex) {
-      const markdownContent = content.slice(lastIndex, codeMatch.index);
-      if (markdownContent.trim()) {
-        parts.push({
-          type: 'markdown',
-          content: markdownContent
-        });
-      }
-    }
-    
-    // 添加代码块
-    const language = codeMatch[1] || 'text';
-    const code = codeMatch[2] || '';
-    parts.push({
-      type: 'code',
-      language,
-      code
-    });
-    
-    lastIndex = codeMatch.index + codeMatch[0].length;
-  }
-  
-  // 3. 添加剩余的markdown内容
-  if (lastIndex < content.length) {
-    const remainingContent = content.slice(lastIndex);
-    if (remainingContent.trim()) {
-      parts.push({
-        type: 'markdown',
-        content: remainingContent
-      });
-    }
-  }
-  
-  return parts;
-};
-*/
 
-// 灵活的渲染器
-// const renderMarkdown: BubbleProps['messageRender'] = (content) => {
-//   console.log('🔍 renderMarkdown 收到内容:', content);
-  
-//   // 解析内容
-//   const parts = parseContent(content);
-//   console.log('📊 解析结果:', parts);
-  
-//   // 如果没有特殊内容，直接使用markdown渲染
-//   if (parts.length === 0 || (parts.length === 1 && parts[0].type === 'markdown')) {
-//     console.log('⚠️ 使用纯markdown渲染');
-//     return (
-//       <Typography>
-//         <div dangerouslySetInnerHTML={{ __html: md.render(content) }} />
-//       </Typography>
-//     );
-//   }
-  
-//   // 混合渲染
-//   console.log('🎨 使用混合渲染');
-//   return (
-//     <Typography>
-//       {parts.map((part, index) => {
-//         switch (part.type) {
-//           case 'markdown':
-//             return (
-//               <div 
-//                 key={index}
-//                 dangerouslySetInnerHTML={{ __html: md.render(part.content || '') }}
-//               />
-//             );
-          
-//           case 'code':
-//             return (
-//               <CodeBlock 
-//                 key={index}
-//                 code={part.code || ''} 
-//                 language={part.language || 'text'} 
-//               />
-//             );
-          
-//           case 'chart':
-//             return (
-//               <ChartRenderer 
-//                 key={index}
-//                 data={part.chartData} 
-//               />
-//             );
-          
-//           default:
-//             return null;
-//         }
-//       })}
-//     </Typography>
-//   );
-// };
 
 // 模拟类型定义
 interface ChatMessage {
