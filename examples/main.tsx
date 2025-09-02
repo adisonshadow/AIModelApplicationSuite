@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import AIModelSelector from './AIModelSelector/App';
 import AIModelSender from './AIModelSender/App';
-import AIModelSender2 from './AIModelSender/App2';
 import './index.css';
 
 // 导航组件
@@ -35,15 +34,6 @@ const Navigation: React.FC = () => {
               AI模型发送器
             </Link>
           </li>
-          <li>
-            <Link 
-              to="/aimodel-sender2" 
-              className={`nav-link ${location.pathname === '/aimodel-sender2' ? 'active' : ''}`}
-            >
-              <span className="nav-icon">🚀</span>
-              AI模型发送器2
-            </Link>
-          </li>
         </ul>
       </div>
     </nav>
@@ -60,7 +50,6 @@ const App: React.FC = () => {
             <Route path="/" element={<Navigate to="/aimodel-selector" replace />} />
             <Route path="/aimodel-selector" element={<AIModelSelector />} />
             <Route path="/aimodel-sender" element={<AIModelSender />} />
-            <Route path="/aimodel-sender2" element={<AIModelSender2 />} />
           </Routes>
         </main>
       </div>

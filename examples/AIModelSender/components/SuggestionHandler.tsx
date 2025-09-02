@@ -80,7 +80,10 @@ export class SuggestionProcessor {
     { "time": 2013, "value": 59.3 },
     { "time": 2014, "value": 64.4 },
     { "time": 2015, "value": 68.9 }
-  ]
+  ],
+  "title": "2013-2015 GDP",
+  "axisXTitle": "year",
+  "axisYTitle": "GDP"
 }
 \`\`\`
 
@@ -142,7 +145,8 @@ group	string	否	-	数据分组名称
 1. 必须使用 \`\`\`vis-chart 代码块包装
 2. 数据结构必须严格按照上述格式
 3. 数值要合理真实
-4. 图表标题要简洁明了
+4. 数值在y轴, 时间、分类等在x轴
+5. 图表标题要简洁明了
 
 请根据用户需求生成相应的图表数据。`;
 

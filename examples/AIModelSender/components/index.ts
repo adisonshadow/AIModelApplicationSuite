@@ -7,3 +7,10 @@ export {
   type ChartData,
   type SuggestionResult 
 } from './SuggestionHandler';
+export { SmartRenderer, CustomCodeBlock, CodeBlock } from './MarkdownRenderer';
+export { PromptTemplateComponent } from './PromptTemplateComponent';
+export { 
+  promptTemplates, 
+  PromptTemplateProcessor,
+  type PromptTemplate 
+} from './PromptTemplateConfig';

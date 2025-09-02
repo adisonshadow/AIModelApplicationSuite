@@ -1,154 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bubble, Sender, Attachments, AttachmentsProps } from '@ant-design/x';
-import type { BubbleProps } from '@ant-design/x';
 
-import { Flex, Button, Divider, Switch, Badge, type GetProp, type GetRef, message } from 'antd';
-import { LinkOutlined, ApiOutlined, CloudUploadOutlined, CopyOutlined, CheckOutlined } from '@ant-design/icons';
-
-import Markdown from 'react-markdown'
+import { Flex, Button, Divider, Switch, Badge, type GetProp, type GetRef } from 'antd';
+import { LinkOutlined, ApiOutlined, CloudUploadOutlined } from '@ant-design/icons';
 
 // AI模型发送器
 import { createAIModelSender } from '../../packages/ai-model-sender';
 import type { AIModelSender as IAIModelSender } from '../../packages/ai-model-sender';
 
 // Suggestion 组件
-import { SuggestionComponent, useSuggestionHandler, type SuggestionResult } from './components';
-
-// Chart 渲染
-import { withChartCode, ChartType, Line, Bar, Pie, Column, Area, Scatter, Radar, Histogram, DualAxes } from '@antv/gpt-vis';
-import remarkGfm from 'remark-gfm';
-
-// @ts-ignore
-import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
-// @ts-ignore
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'; // dracula  // https://react-syntax-highlighter.github.io/react-syntax-highlighter/demo/prism.html
-
-// 创建支持图表的代码块组件
-const CodeBlock = withChartCode({
-  components: { [ChartType.Line]: Line, [ChartType.Bar]: Bar, [ChartType.Pie]: Pie, [ChartType.Column]: Column, [ChartType.Area]: Area, [ChartType.Scatter]: Scatter , [ChartType.Radar]: Radar, [ChartType.Histogram]: Histogram, [ChartType.DualAxes]: DualAxes },
-});
-
-// 自定义代码块组件 - 支持图表和带header的代码高亮
-const CustomCodeBlock: React.FC<any> = (props) => {
-  const { children, className, node, ...rest } = props;
-  const [copied, setCopied] = useState(false);
-  
-  // 检查是否是图表代码块
-  if (className === 'language-vis-chart') {
-    // console.log("🔍 GPTVis", children);
-    // 直接使用 withChartCode 创建的组件来处理图表
-    const ChartCodeBlock = CodeBlock as any;
-    return (
-      <div style={{ 
-        minWidth: '600px',
-        minHeight: '600px',
-        width: '100%',
-        margin: '16px 0'
-      }}>
-        <ChartCodeBlock {...props} />
-      </div>
-    );
-  }
-  
-  // 检查是否是带语言标识的代码块
-  const match = /language-(\w+)/.exec(className || '');
-  if (match) {
-    const language = match[1];
-    const codeContent = String(children).replace(/\n$/, '');
-    
-    const handleCopy = async () => {
-      try {
-        await navigator.clipboard.writeText(codeContent);
-        setCopied(true);
-        message.success('代码已复制到剪贴板');
-        setTimeout(() => setCopied(false), 2000);
-      } catch (err) {
-        message.error('复制失败');
-      }
-    };
-    
-    return (
-      <div style={{ margin: '16px 0' }}>
-        {/* 代码块Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '8px 16px',
-          backgroundColor: '#1e1e1e',
-          borderTopLeftRadius: '6px',
-          borderTopRightRadius: '6px',
-          borderBottom: '1px solid #333',
-          fontSize: '12px',
-          color: '#ccc'
-        }}>
-          <span style={{ 
-            textTransform: 'uppercase', 
-            fontWeight: '500',
-            color: '#fff'
-          }}>
-            {language}
-          </span>
-          <Button
-            type="text"
-            size="small"
-            icon={copied ? <CheckOutlined /> : <CopyOutlined />}
-            onClick={handleCopy}
-            style={{
-              color: copied ? '#52c41a' : '#ccc',
-              padding: '4px 8px',
-              height: 'auto',
-              minHeight: 'auto'
-            }}
-          >
-            {copied ? '已复制' : '复制'}
-          </Button>
-        </div>
-        
-        {/* 代码内容 */}
-        <SyntaxHighlighter
-          {...rest}
-          PreTag="div"
-          children={codeContent}
-          language={language}
-          style={vscDarkPlus}
-          customStyle={{
-            margin: 0,
-            borderTopLeftRadius: 0,
-            borderTopRightRadius: 0,
-            borderBottomLeftRadius: '6px',
-            borderBottomRightRadius: '6px'
-          }}
-        />
-      </div>
-    );
-  }
-  
-  // 普通代码块
-  return (
-    <code {...rest} className={className}>
-      {children}
-    </code>
-  );
-};
-
-// 智能渲染器 - 结合 GPTVis 和代码块渲染
-const SmartRenderer: BubbleProps['messageRender'] = (content) => {  
-  return (
-    <div style={{ minWidth: '600px', width: '100%' }}>
-      <Markdown 
-        remarkPlugins={[remarkGfm]} 
-        components={{ 
-          code: CustomCodeBlock
-        }}
-      >
-        {content}
-      </Markdown>
-    </div>
-  );
-};
-
-
+import { 
+  SuggestionComponent, 
+  useSuggestionHandler, 
+  type SuggestionResult, 
+  SmartRenderer,
+  PromptTemplateComponent,
+  PromptTemplateProcessor,
+} from './components';
 
 // 模拟类型定义
 interface ChatMessage {
@@ -288,49 +156,6 @@ const AIModelSender: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<GetProp<AttachmentsProps, 'items'>>([]);
   
-  // 提示词配置
-  // const [suggestionValue, setSuggestionValue] = useState<string>('');
-
-  // 内置提示词模板
-  const promptTemplates = [
-    {
-      id: 'json',
-      name: 'JSON格式',
-      description: '强制返回的内容为JSON格式',
-      prompt: '请严格按照JSON格式返回，不要包含任何其他文字说明。'
-    },
-    {
-      id: 'html-css',
-      name: 'HTML/CSS代码',
-      description: '强制返回的内容为HTML/CSS代码',
-      prompt: '请返回完整的HTML和CSS代码，不要包含任何解释文字。'
-    },
-    {
-      id: 'python',
-      name: 'Python代码',
-      description: '强制返回的内容为Python代码',
-      prompt: '请返回完整的Python代码，包含必要的注释，不要包含任何解释文字。'
-    },
-    {
-      id: 'markdown',
-      name: 'Markdown格式',
-      description: '强制返回的内容为Markdown格式',
-      prompt: '请使用Markdown格式返回，包含适当的标题、列表、代码块等。'
-    },
-    {
-      id: 'chart',
-      name: '图表生成',
-      description: '生成包含图表的回复',
-      prompt: '请生成一个包含图表的回复，使用 ```vis-chart 代码块来包装图表数据。图表数据应该是JSON格式，包含type、data、axisXTitle、axisYTitle等字段。'
-    },
-    {
-      id: 'custom',
-      name: '自定义提示词',
-      description: '使用自定义的提示词',
-      prompt: ''
-    }
-  ];
-  
   // 响应相关
   const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -407,31 +232,33 @@ const AIModelSender: React.FC = () => {
 
     const userMessage: ChatMessage = { role: 'user', content: processedMessage };
     
-    // 构建消息列表
-    let newMessages = [...messages];
+    // 构建显示消息列表（不包含系统提示词）
+    const displayMessages = [...messages, userMessage];
+    setMessages(displayMessages);
     
-    // 添加 suggestion 系统提示词
+    // 构建发送给AI的消息列表（包含系统提示词）
+    let aiMessages = [...messages];
+    
+    // 添加 suggestion 系统提示词（仅用于AI请求）
     if (suggestionSystemPrompt) {
       const suggestionPrompt: ChatMessage = { 
         role: 'system', 
         content: suggestionSystemPrompt 
       };
-      newMessages = [...newMessages, suggestionPrompt];
+      aiMessages = [...aiMessages, suggestionPrompt];
     }
     
-    // 如果有选择提示词模板，在用户消息前添加系统提示词
-    if (selectedPromptTemplate && (customPrompt || promptTemplates.find(t => t.id === selectedPromptTemplate)?.prompt)) {
-      const promptContent = customPrompt || promptTemplates.find(t => t.id === selectedPromptTemplate)?.prompt || '';
+    // 如果有选择提示词模板，在用户消息前添加系统提示词（仅用于AI请求）
+    if (selectedPromptTemplate && PromptTemplateProcessor.hasValidPrompt(selectedPromptTemplate, customPrompt)) {
+      const promptContent = PromptTemplateProcessor.getPromptContent(selectedPromptTemplate, customPrompt);
       const systemPrompt: ChatMessage = { 
         role: 'system', 
         content: promptContent 
       };
-      newMessages = [...newMessages, systemPrompt];
+      aiMessages = [...aiMessages, systemPrompt];
     }
     
-    newMessages = [...newMessages, userMessage];
-    
-    setMessages(newMessages);
+    aiMessages = [...aiMessages, userMessage];
     setInputMessage('');
     setIsLoading(true);
     setError(null);
@@ -453,7 +280,7 @@ const AIModelSender: React.FC = () => {
         model: selectedConfig.config.model,
         jsonParams: selectedConfig.config.jsonParams
       },
-      fullMessages: newMessages
+      fullMessages: aiMessages
     });
 
     try {
@@ -480,7 +307,7 @@ const AIModelSender: React.FC = () => {
           // 直接创建流式请求
           const response = await openaiClient.chat.completions.create({
             model: selectedConfig.config.model || 'deepseek-v3-1-250821',
-            messages: newMessages.map(msg => ({
+            messages: aiMessages.map((msg: ChatMessage) => ({
               role: msg.role as 'system' | 'user' | 'assistant',
               content: msg.content
             })),
@@ -552,9 +379,9 @@ const AIModelSender: React.FC = () => {
               finishReason: 'stop'
             }],
             usage: {
-              promptTokens: Math.floor(newMessages.reduce((sum, msg) => sum + msg.content.length, 0) / 4),
+              promptTokens: Math.floor(aiMessages.reduce((sum: number, msg: ChatMessage) => sum + msg.content.length, 0) / 4),
               completionTokens: Math.floor(fullContent.length / 4),
-              totalTokens: Math.floor((newMessages.reduce((sum, msg) => sum + msg.content.length, 0) + fullContent.length) / 4)
+              totalTokens: Math.floor((aiMessages.reduce((sum: number, msg: ChatMessage) => sum + msg.content.length, 0) + fullContent.length) / 4)
             },
             created: created
           };
@@ -584,7 +411,7 @@ const AIModelSender: React.FC = () => {
           jsonParams: selectedConfig.config.jsonParams
         };
         
-        const response = await sender.sendChatMessage(newMessages, options);
+        const response = await sender.sendChatMessage(aiMessages, options);
         setLastResponse(response);
         
         // 控制台日志：收到普通响应
@@ -777,55 +604,12 @@ const AIModelSender: React.FC = () => {
             </div>
           </div> */}
 
-          <div className="sidebar-section">
-            <h3>🎭 开发用提示词追加</h3>
-            <div className="prompt-templates">
-              <div className="template-selector">
-                <select
-                  value={selectedPromptTemplate}
-                  onChange={(e) => {
-                    setSelectedPromptTemplate(e.target.value);
-                    if (e.target.value !== 'custom') {
-                      const template = promptTemplates.find(t => t.id === e.target.value);
-                      setCustomPrompt(template?.prompt || '');
-                    }
-                  }}
-                  className="template-select"
-                >
-                  <option value="">不使用模板</option>
-                  {promptTemplates.map(template => (
-                    <option key={template.id} value={template.id}>
-                      {template.name} - {template.description}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              {selectedPromptTemplate === 'custom' && (
-                <div className="custom-prompt">
-                  <label>自定义提示词:</label>
-                  <textarea
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="输入自定义提示词..."
-                    rows={3}
-                    className="custom-prompt-input"
-                  />
-                </div>
-              )}
-              
-              {selectedPromptTemplate && (
-                <div className="template-preview">
-                  <small>
-                    <strong>当前模板:</strong> {promptTemplates.find(t => t.id === selectedPromptTemplate)?.name}
-                  </small>
-                  <div className="template-content">
-                    {customPrompt || promptTemplates.find(t => t.id === selectedPromptTemplate)?.prompt}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <PromptTemplateComponent
+            selectedTemplate={selectedPromptTemplate}
+            customPrompt={customPrompt}
+            onTemplateChange={setSelectedPromptTemplate}
+            onCustomPromptChange={setCustomPrompt}
+          />
 
 
           <div className="sidebar-section">
