@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bubble, Sender, Suggestion, Attachments, AttachmentsProps } from '@ant-design/x';
+import { Bubble, Sender, Attachments, AttachmentsProps } from '@ant-design/x';
 import type { BubbleProps } from '@ant-design/x';
 
 import { Flex, Button, Divider, Switch, Badge, type GetProp, type GetRef, message } from 'antd';
-import { LinkOutlined, ApiOutlined, CloudUploadOutlined, ReadOutlined, CopyOutlined, CheckOutlined } from '@ant-design/icons';
+import { LinkOutlined, ApiOutlined, CloudUploadOutlined, CopyOutlined, CheckOutlined } from '@ant-design/icons';
 
 import Markdown from 'react-markdown'
 
@@ -11,14 +11,22 @@ import Markdown from 'react-markdown'
 import { createAIModelSender } from '../../packages/ai-model-sender';
 import type { AIModelSender as IAIModelSender } from '../../packages/ai-model-sender';
 
+// Suggestion 组件
+import { SuggestionComponent, useSuggestionHandler, type SuggestionResult } from './components';
+
 // Chart 渲染
-import { GPTVis } from '@antv/gpt-vis';
+import { withChartCode, ChartType, Line, Bar, Pie, Column, Area, Scatter, Radar, Histogram, DualAxes } from '@antv/gpt-vis';
 import remarkGfm from 'remark-gfm';
 
 // @ts-ignore
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 // @ts-ignore
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'; // dracula  // https://react-syntax-highlighter.github.io/react-syntax-highlighter/demo/prism.html
+
+// 创建支持图表的代码块组件
+const CodeBlock = withChartCode({
+  components: { [ChartType.Line]: Line, [ChartType.Bar]: Bar, [ChartType.Pie]: Pie, [ChartType.Column]: Column, [ChartType.Area]: Area, [ChartType.Scatter]: Scatter , [ChartType.Radar]: Radar, [ChartType.Histogram]: Histogram, [ChartType.DualAxes]: DualAxes },
+});
 
 // 自定义代码块组件 - 支持图表和带header的代码高亮
 const CustomCodeBlock: React.FC<any> = (props) => {
@@ -27,12 +35,17 @@ const CustomCodeBlock: React.FC<any> = (props) => {
   
   // 检查是否是图表代码块
   if (className === 'language-vis-chart') {
-    console.log("🔍 GPTVis", children);
+    // console.log("🔍 GPTVis", children);
+    // 直接使用 withChartCode 创建的组件来处理图表
+    const ChartCodeBlock = CodeBlock as any;
     return (
-      <div style={{ margin: '16px 0' }}>
-        <GPTVis>
-          {String(children)}
-        </GPTVis>
+      <div style={{ 
+        minWidth: '600px',
+        minHeight: '600px',
+        width: '100%',
+        margin: '16px 0'
+      }}>
+        <ChartCodeBlock {...props} />
       </div>
     );
   }
@@ -121,14 +134,8 @@ const CustomCodeBlock: React.FC<any> = (props) => {
 
 // 智能渲染器 - 结合 GPTVis 和代码块渲染
 const SmartRenderer: BubbleProps['messageRender'] = (content) => {  
-  // 统一设置 minWidth，确保内容有足够的显示空间
-  const containerStyle = { 
-    minWidth: '600px',
-    width: '100%'
-  };
-
   return (
-    <div style={containerStyle}>
+    <div style={{ minWidth: '600px', width: '100%' }}>
       <Markdown 
         remarkPlugins={[remarkGfm]} 
         components={{ 
@@ -251,28 +258,7 @@ const createRealAISender = (config: AIModelConfig): IAIModelSender => {
   }
 };
 
-type SuggestionItems = Exclude<GetProp<typeof Suggestion, 'items'>, () => void>;
-
-const suggestions: SuggestionItems = [
-  { label: 'Write a report', value: 'report' },
-  { label: 'Draw a picture', value: 'draw' },
-  { label: 'Create a chart', value: 'chart' },
-  {
-    label: 'Check some knowledge',
-    value: 'knowledge',
-    icon: <ReadOutlined />,
-    children: [
-      {
-        label: 'About React',
-        value: 'react',
-      },
-      {
-        label: 'About Ant Design',
-        value: 'antd',
-      },
-    ],
-  },
-];
+// 移除旧的 suggestions 定义，现在使用 components 中的配置
 
 
 
@@ -282,13 +268,17 @@ const AIModelSender: React.FC = () => {
   
   // 聊天相关状态
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'system', content: '你好！我是AI助手，有什么可以帮助你的吗？' }
+    { role: 'system', content: '你好！我是AI编程专家，有什么可以帮助你的吗？' }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   // 发送模式
   const [streamMode, setStreamMode] = useState(true); // 默认启用流式响应
+  
+  // Suggestion 相关状态
+  const [selectedSuggestion, setSelectedSuggestion] = useState<string>('');
+  const { handleSuggestion } = useSuggestionHandler();
   
   // 提示词模板配置
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>('');
@@ -405,20 +395,41 @@ const AIModelSender: React.FC = () => {
       return;
     }
 
-    const userMessage: ChatMessage = { role: 'user', content: inputMessage };
+    // 处理 suggestion
+    let processedMessage = inputMessage;
+    let suggestionSystemPrompt = '';
+    
+    if (selectedSuggestion) {
+      const suggestionResult: SuggestionResult = handleSuggestion(inputMessage, selectedSuggestion);
+      processedMessage = suggestionResult.processedMessage;
+      suggestionSystemPrompt = suggestionResult.systemPrompt || '';
+    }
+
+    const userMessage: ChatMessage = { role: 'user', content: processedMessage };
+    
+    // 构建消息列表
+    let newMessages = [...messages];
+    
+    // 添加 suggestion 系统提示词
+    if (suggestionSystemPrompt) {
+      const suggestionPrompt: ChatMessage = { 
+        role: 'system', 
+        content: suggestionSystemPrompt 
+      };
+      newMessages = [...newMessages, suggestionPrompt];
+    }
     
     // 如果有选择提示词模板，在用户消息前添加系统提示词
-    let newMessages = [...messages];
     if (selectedPromptTemplate && (customPrompt || promptTemplates.find(t => t.id === selectedPromptTemplate)?.prompt)) {
       const promptContent = customPrompt || promptTemplates.find(t => t.id === selectedPromptTemplate)?.prompt || '';
       const systemPrompt: ChatMessage = { 
         role: 'system', 
         content: promptContent 
       };
-      newMessages = [...messages, systemPrompt, userMessage];
-    } else {
-      newMessages = [...messages, userMessage];
+      newMessages = [...newMessages, systemPrompt];
     }
+    
+    newMessages = [...newMessages, userMessage];
     
     setMessages(newMessages);
     setInputMessage('');
@@ -620,9 +631,19 @@ const AIModelSender: React.FC = () => {
 
   // 清空聊天记录
   const clearChat = () => {
-    setMessages([{ role: 'system', content: '你好！我是AI助手，有什么可以帮助你的吗？' }]);
+    setMessages([{ role: 'system', content: '你好！我是AI编程专家，有什么可以帮助你的吗？' }]);
     setLastResponse(null);
     setError(null);
+  };
+
+  // 处理 suggestion 选择
+  const handleSuggestionSelect = (value: string) => {
+    setSelectedSuggestion(value);
+    if (value === 'vis-chart') {
+      setInputMessage(`[vis-chart]: `);
+    } else {
+      setInputMessage(`[${value}]: `);
+    }
   };
 
   // 处理回车键发送
@@ -938,13 +959,8 @@ const AIModelSender: React.FC = () => {
 
             {/* 使用 Ant Design X 的 Sender 组件 */}
             <div className="chat-input-container">
-              <Suggestion
-                items={suggestions}
-                onSelect={(itemVal) => {
-                  setInputMessage(`[${itemVal}]:`);
-                }}
-              >
-                {({ onTrigger }) => {
+              <SuggestionComponent onSuggestionSelect={handleSuggestionSelect}>
+                {({ onTrigger }: { onTrigger: (show?: boolean) => void }) => {
                   return (
                     <Sender
                       ref={senderRef}
@@ -1018,7 +1034,7 @@ const AIModelSender: React.FC = () => {
                       actions={false}
                     />
                   )}}
-              </Suggestion>
+              </SuggestionComponent>
             </div>
           </div>
 
