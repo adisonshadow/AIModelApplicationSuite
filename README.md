@@ -1,4 +1,4 @@
-# React AI Model Manager
+# AIModel Selector And Unified AIMessage Transceiver
 
 一个完整的React AI模型管理解决方案，包含AI模型选择器和AI消息适配器，提供统一的接口与不同AI服务商进行交互。
 
