@@ -282,7 +282,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
         </div>
         
         {/* 当前模型信息 */}
-        {(() => {
+        {/* {(() => {
           const selectedConfig = enabledConfigs.find(config => config.id === currentSelectedId);
           return selectedConfig && (
             <div className="ai-selected-model-info">
@@ -290,7 +290,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
               <div className="ai-model-provider">{getProviderDisplayName(selectedConfig.provider)}</div>
             </div>
           );
-        })()}
+        })()} */}
         
         {/* 配置弹窗 */}
         {showModal && (

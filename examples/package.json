@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "dev:vite": "nodemon --watch . --ext ts,tsx,css --exec \"vite\"",
+    "dev:watch": "nodemon --watch . --ext ts,tsx,css --exec \"vite\"",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

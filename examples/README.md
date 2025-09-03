@@ -1,6 +1,6 @@
-# React AI Model Selector/Manager - AI模型选择器演示
+# AI 模型 应用套件（AI Model Application Suite）演示
 
-这是 React AI Model Selector/Manager 组件的AI模型选择器演示应用。
+这是 React AI Model Selector/Manager 组件 和 Unified AIMessage Transceiver 组件的 演示应用。
 
 ## 快速开始
 
@@ -46,5 +46,5 @@ npm run build
 ## 注意事项
 
 - 这是一个独立的演示应用，有自己的依赖管理
-- 通过 `../../packages/ai-model-manager` 路径引用主库的组件和类型
+- 通过 `../../packages/ai-model-manager` 和 `../../packages/unified-AI-chat-transceiver` 路径引用主库的组件和类型
 - 构建输出到 `../../examples-dist` 目录

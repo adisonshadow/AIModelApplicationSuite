@@ -1,6 +1,6 @@
-# AI消息适配器 (Unified AIMessage Transceiver(Adapter))
+# 统一AI消息接发器  (Unified AIMessage Transceiver(Adapter))
 
-AI消息适配器是一个统一的接口层，允许开发人员使用统一的API与不同的AI服务商进行消息交互，无需关心底层服务商的差异。
+统一AI消息接发器 是一个统一的接口层，允许开发人员使用统一的API与不同的AI服务商进行消息交互，无需关心底层服务商的差异。
 
 ## 特性
 
