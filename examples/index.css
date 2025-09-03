@@ -148,7 +148,7 @@ body {
 }
 
 /* AI消息适配器样式 */
-.ai-model-sender {
+.unified-ai-chat-transceiver {
   /* background: white;
   border-radius: 12px;
   padding: 2rem;
@@ -249,13 +249,13 @@ body {
   word-break: break-word;
 }
 
-.ai-model-sender h1 {
+.unified-ai-chat-transceiver h1 {
   color: #333;
   margin-bottom: 1rem;
   font-size: 2rem;
 }
 
-.ai-model-sender p {
+.unified-ai-chat-transceiver p {
   color: #666;
   line-height: 1.6;
   margin-bottom: .2rem;
@@ -894,7 +894,7 @@ body {
   }
   
   .ai-model-selector,
-  .ai-model-sender {
+  .unified-ai-chat-transceiver {
     padding: 1rem;
   }
 

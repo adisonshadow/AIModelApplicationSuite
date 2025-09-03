@@ -15,13 +15,13 @@ AI消息适配器是一个统一的接口层，允许开发人员使用统一的
 ### 安装
 
 ```bash
-npm install @your-org/ai-model-sender
+npm install unified-AI-chat-transceiver
 ```
 
 ### 基本使用
 
 ```typescript
-import { createAIModelSender } from '@your-org/ai-model-sender';
+import { createAIModelSender } from 'unified-AI-chat-transceiver';
 
 // 创建发送器实例
 const sender = createAIModelSender({
@@ -47,7 +47,7 @@ console.log(response.content);
 ### 1. 创建发送器
 
 ```typescript
-import { createAIModelSender } from '@your-org/ai-model-sender';
+import { createAIModelSender } from 'unified-AI-chat-transceiver';
 
 // 方式1: 使用配置对象
 const sender = createAIModelSender({

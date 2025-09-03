@@ -5,8 +5,8 @@ import { Flex, Button, Divider, Switch, Badge, type GetProp, type GetRef } from 
 import { LinkOutlined, ApiOutlined, CloudUploadOutlined } from '@ant-design/icons';
 
 // AI消息适配器
-import { createAIModelSender } from '../../packages/ai-model-sender';
-import type { AIModelSender as IAIModelSender } from '../../packages/ai-model-sender';
+import { createAIModelSender } from '../../packages/unified-AI-chat-transceiver';
+import type { AIModelSender as IAIModelSender } from '../../packages/unified-AI-chat-transceiver';
 
 // AI模型选择器
 import { AIModelSelect, aiModelSelected } from '../../packages/ai-model-manager';
@@ -56,7 +56,7 @@ interface ChatResponse {
 // 创建真实AI发送器
 const createRealAISender = (config: AIModelConfig): IAIModelSender => {
   try {
-    // 转换配置格式以匹配 ai-model-sender 的类型要求
+    // 转换配置格式以匹配 unified-AI-chat-transceiver 的类型要求
     const convertedConfig = {
       ...config,
       provider: config.provider as any, // 类型转换
@@ -481,7 +481,7 @@ const AIModelSender: React.FC = () => {
 
 
   return (
-    <div className="ai-model-sender">
+            <div className="unified-ai-chat-transceiver">
       {/* <div className="sender-header">
         <h1>🤖 AI消息适配器</h1>
         <p>这是一个完整的AI消息适配器演示页面，支持聊天对话功能</p>

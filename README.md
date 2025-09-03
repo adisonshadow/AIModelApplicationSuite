@@ -1,6 +1,6 @@
-# AIModel Selector And Unified AIMessage Transceiver
+# AI 模型 应用套件（AI Model Application Suite）
 
-一个完整的React AI模型管理解决方案，包含AI模型选择器和AI消息适配器，提供统一的接口与不同AI服务商进行交互。
+这款 AI 模型应用套件基于 TypeScript 开发并以 npm 包形式发布，核心包含 AI 模型选择器与 AI 消息适配器两大模块，能通过统一接口实现与不同 AI 服务商的高效交互，帮助开发者无需单独适配各服务商协议，降低多 AI 服务集成门槛。
 
 [ [Examples](./examples/) ]
 
@@ -247,7 +247,7 @@ function APIStorageExample() {
 
 ### 统一AI消息接发器 - 高级功能
 
-[详细文档](./examples/AIModelSender/README.md)
+[详细文档](./examples/UnifiedAIChatTransceiver/README.md)
 
 #### 多轮对话
 
@@ -624,7 +624,7 @@ packages/
 │   ├── types/           # TypeScript类型定义
 │   ├── utils/           # 工具函数
 │   └── styles/          # 样式文件
-├── ai-model-sender/      # AI消息适配器
+├── unified-AI-chat-transceiver/      # AI消息适配器
 │   ├── src/             # 源代码
 │   ├── types/           # TypeScript类型定义
 │   └── providers/       # AI服务商实现
@@ -657,7 +657,7 @@ yarn build
 
 1. 在`packages/ai-model-manager/types/index.ts`中添加新的提供商枚举值
 2. 在`packages/ai-model-manager/utils/providers.ts`中添加提供商元数据配置
-3. 在`packages/ai-model-sender/src/providers/`中添加新的服务商实现
+3. 在`packages/unified-AI-chat-transceiver/src/providers/`中添加新的服务商实现
 4. 更新文档和类型定义
 
 ## 📄 许可证
@@ -670,8 +670,6 @@ MIT
 
 ## 📝 更新日志
 
-### 1.0.0
-
 - 初始版本发布
 - 支持主流AI提供商
 - 提供localStorage和API存储方式
@@ -679,3 +677,7 @@ MIT
 - AI模型选择器状态持久化
 - AI消息适配器统一接口
 - 流式响应支持
+
+## todo
+
+- 思维链

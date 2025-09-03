@@ -18,6 +18,6 @@
     "declaration": true,
     "outDir": "./dist"
   },
-  "include": ["packages/ai-model-manager", "packages/ai-model-sender"],
+      "include": ["packages/ai-model-manager", "packages/unified-AI-chat-transceiver"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

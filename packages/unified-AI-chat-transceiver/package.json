@@ -1,7 +1,7 @@
 {
-  "name": "@ai-model-sender",
+  "name": "unified-AI-chat-transceiver",
   "version": "0.0.1",
-  "description": "Unified AIMessage Transceiver",
+  "description": "Unified AI Chat Transceiver",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -25,8 +25,9 @@
   ],
   "keywords": [
     "ai",
-    "model",
-    "sender",
+    "chat",
+    "transceiver",
+    "unified",
     "openai",
     "volcengine"
   ],
