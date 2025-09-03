@@ -1,6 +1,6 @@
-# React AI Model Manager - AI模型选择器演示
+# React AI Model Selector/Manager - AI模型选择器演示
 
-这是 React AI Model Manager 组件的AI模型选择器演示应用。
+这是 React AI Model Selector/Manager 组件的AI模型选择器演示应用。
 
 ## 快速开始
 

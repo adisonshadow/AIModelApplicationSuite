@@ -1,7 +1,7 @@
 {
   "name": "react-ai-model-manager-aimodel-selector",
   "version": "1.0.0",
-  "description": "React AI Model Manager - AI模型选择器演示应用",
+  "description": "React AI Model Selector/Manager - AI模型选择器演示应用",
   "private": true,
   "license": "MIT",
   "scripts": {

@@ -305,7 +305,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
           />
         )}
 
-        {/* 模型管理器 */}
+        {/* 模型选择器 */}
         {showManager && (
           <AIModelManager
             visible={showManager}
@@ -434,7 +434,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
           />
         )}
 
-        {/* 模型管理器 */}
+        {/* 模型选择器 */}
         {showManager && (
           <AIModelManager
             visible={showManager}

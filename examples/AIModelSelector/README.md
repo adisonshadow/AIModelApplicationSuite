@@ -1,6 +1,6 @@
-# AI Model Manager 使用说明文档
+# AI Model Selector/Manager 使用说明文档
 
-这个目录包含了 React AI Model Manager 组件的各种示例应用和详细的使用说明。
+这个目录包含了 React AI Model Selector/Manager 组件的各种示例应用和详细的使用说明。
 
 ## 示例应用列表
 
@@ -378,7 +378,7 @@ function CompleteExample() {
   return (
     <div className="app">
       <header>
-        <h1>AI模型管理器示例</h1>
+        <h1>AI模型选择器示例</h1>
         <button onClick={handleQueryStatus}>查询状态</button>
       </header>
 

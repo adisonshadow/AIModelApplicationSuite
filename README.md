@@ -2,9 +2,11 @@
 
 一个完整的React AI模型管理解决方案，包含AI模型选择器和AI消息适配器，提供统一的接口与不同AI服务商进行交互。
 
+[ [Examples](./examples/) ]
+
 ## 🚀 核心功能
 
-### AI模型管理器 (AI Model Manager)
+### AI模型选择器 (AI Model Selector)
 - ✨ **无第三方UI依赖**：完全基于原生React和CSS实现
 - 🔧 **灵活的存储方式**：支持localStorage、API、自定义存储
 - 🎨 **可自定义样式**：提供基础样式并支持CSS变量覆盖
@@ -15,7 +17,7 @@
 - 🔄 **状态持久化**：自动保存选中状态，下次打开时自动选中上次的选择
 - 📡 **事件驱动架构**：提供统一的管理器实例，支持多组件共享状态
 
-### AI消息适配器 (AI Message Adapter)
+### 统一AI消息接发器 (Unified AIMessage Transceiver)
 - 🔄 **统一接口**：使用相同的API与不同AI服务商交互
 - 🚀 **简单易用**：简洁的API设计，快速上手
 - 🔌 **可扩展**：支持添加新的AI服务商
@@ -24,7 +26,7 @@
 
 ## 📦 安装
 
-注意：尚在自用并优化中，未发布成 npm 包
+** 注意：尚在自用并优化中，未发布成 npm 包 ** 
 
 ```bash
 npm install react-ai-model-manager
@@ -53,28 +55,13 @@ npm install @ai-sdk/openai
 # DeepSeek
 npm install @ai-sdk/deepseek
 
-# Anthropic
-npm install @ai-sdk/anthropic
+# 还有更多其他
 
-# Google
-npm install @ai-sdk/google
-
-# Mistral
-npm install @ai-sdk/mistral
-
-# Cohere
-npm install @ai-sdk/cohere
-
-# Azure OpenAI
-npm install @ai-sdk/azure
-
-# Ollama
-npm install ollama
 ```
 
 ## 🎯 快速开始
 
-### AI模型管理器 - 基础用法
+### AI模型选择器 - 基础用法
 
 ```tsx
 import React, { useState } from 'react';
@@ -97,7 +84,7 @@ function App() {
 }
 ```
 
-### AI模型管理器 - 使用统一管理器
+### AI模型选择器 - 使用统一管理器
 
 ```tsx
 import React, { useState, useEffect } from 'react';
@@ -140,7 +127,7 @@ function App() {
 }
 ```
 
-### AI消息适配器 - 基础用法
+### 统一AI消息接发器 - 基础用法
 
 ```tsx
 import { createAIModelSender } from 'react-ai-model-manager';
@@ -164,7 +151,7 @@ const response = await sender.sendMessage({
 console.log(response.content);
 ```
 
-### AI消息适配器 - 流式响应
+### 统一AI消息接发器 - 流式响应
 
 ```tsx
 // 流式响应
@@ -185,7 +172,9 @@ for await (const chunk of stream) {
 
 ## 📚 详细使用指南
 
-### AI模型管理器 - 高级配置
+### AI模型选择器 - 高级配置
+
+[详细文档](./examples/AIModelSelector/README.md)
 
 #### 自定义存储方式
 
@@ -256,7 +245,9 @@ function APIStorageExample() {
 }
 ```
 
-### AI消息适配器 - 高级功能
+### 统一AI消息接发器 - 高级功能
+
+[详细文档](./examples/AIModelSender/README.md)
 
 #### 多轮对话
 
@@ -375,7 +366,7 @@ function CustomStyleExample() {
 
 ## 🔧 支持的服务商
 
-### AI模型管理器支持的服务商
+### AI模型选择器支持的服务商
 
 | 提供商 | 枚举值 | NPM包 | 描述 |
 |--------|--------|-------|------|
@@ -418,7 +409,7 @@ const sender = createAIModelSender({
 
 ## 📖 API 参考
 
-### AI模型管理器 API
+### AI模型选择器 API
 
 #### AIModelSelect Props
 
@@ -540,7 +531,7 @@ interface AIModelConfig {
 
 ## 🎯 最佳实践
 
-### AI模型管理器最佳实践
+### AI模型选择器最佳实践
 
 #### 1. 错误处理
 
@@ -628,7 +619,7 @@ cd examples/AIModelSender && npm install && npm run dev
 
 ```
 packages/
-├── ai-model-manager/     # AI模型管理器
+├── ai-model-manager/     # AI模型选择器
 │   ├── components/       # React组件
 │   ├── types/           # TypeScript类型定义
 │   ├── utils/           # 工具函数
@@ -685,6 +676,6 @@ MIT
 - 支持主流AI提供商
 - 提供localStorage和API存储方式
 - 响应式设计和自定义主题支持
-- AI模型管理器状态持久化
+- AI模型选择器状态持久化
 - AI消息适配器统一接口
 - 流式响应支持

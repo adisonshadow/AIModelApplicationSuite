@@ -1,7 +1,7 @@
 {
   "name": "@ai-model-manager",
-  "version": "1.0.0",
-  "description": "AI模型配置和管理组件包",
+  "version": "0.0.2",
+  "description": "AI Model Selector and Manager",
   "main": "index.ts",
   "types": "index.ts",
   "exports": {

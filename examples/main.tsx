@@ -13,7 +13,7 @@ const Navigation: React.FC = () => {
     <nav className="main-nav">
       <div className="nav-container">
         <div className="nav-brand">
-          <h1>🤖 AI模型管理器</h1>
+          <h1>🤖 AI模型选择器</h1>
         </div>
         <ul className="nav-menu">
           <li>

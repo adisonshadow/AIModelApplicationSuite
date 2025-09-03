@@ -1,7 +1,7 @@
 import { AIModelConfig, StorageConfig } from '../types';
 import { StorageManager } from './storage';
 
-// AI模型管理器类
+// AI模型选择器类
 export class AIModelManager {
   private storageManager: StorageManager;
   private configs: AIModelConfig[] = [];

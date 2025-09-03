@@ -96,7 +96,7 @@ export interface AIModelSelectProps {
   allowDelete?: boolean;
   // 下拉模式的占位符文本
   placeholder?: string;
-  // AI模型管理器实例
+  // AI模型选择器实例
   manager?: any;
 }
 

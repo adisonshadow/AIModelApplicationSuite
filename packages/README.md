@@ -1,18 +1,18 @@
 # Packages
 
-这个目录包含了 React AI Model Manager 的核心包。
+这个目录包含了 React AI Model Selector/Manager 的核心包。
 
 ## 包列表
 
 ### ai-model-manager
 
-React AI Model Manager 的核心组件包，包含所有可复用的组件、类型定义和工具函数。
+React AI Model Selector/Manager 的核心组件包，包含所有可复用的组件、类型定义和工具函数。
 
 **包含内容：**
 - `components/` - React组件
   - `AIModelSelect.tsx` - AI模型选择器组件
   - `AIModelConfModal.tsx` - AI模型配置弹窗组件
-  - `AIModelManager.tsx` - AI模型管理器组件
+  - `AIModelManager.tsx` - AI模型选择器组件
 - `types/` - TypeScript类型定义
 - `utils/` - 工具函数
   - `providers.ts` - AI提供商配置
