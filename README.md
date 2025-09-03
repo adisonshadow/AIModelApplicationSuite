@@ -1,52 +1,54 @@
-# AI 模型 应用套件（AI Model Application Suite）
+<img src="https://gw.alipayobjects.com/zos/antfincdn/R8sN%24GNdh6/language.svg" width="18">  English ｜ [中文](./README_cn.md)
 
-这款 AI 模型应用套件基于 TypeScript 开发并以 npm 包形式发布，核心包含 AI 模型选择器与 AI 消息适配器两大模块，能通过统一接口实现与不同 AI 服务商的高效交互，帮助开发者无需单独适配各服务商协议，降低多 AI 服务集成门槛。
+# AI Model Application Suite
+
+This AI Model Application Suite is developed in TypeScript and published as npm packages. It consists of two core modules: AI Model Selector and Unified AI Message Transceiver, which enable efficient interaction with different AI service providers through unified interfaces. This helps developers avoid the need to individually adapt to each service provider's protocols, lowering the barrier to multi-AI service integration.
 
 [ [Examples](./examples/) ]
 
-## 🚀 核心功能
+## 🚀 Core Features
 
-### AI模型选择器 (AI Model Selector)
-- ✨ **无第三方UI依赖**：完全基于原生React和CSS实现
-- 🔧 **灵活的存储方式**：支持localStorage、API、自定义存储
-- 🎨 **可自定义样式**：提供基础样式并支持CSS变量覆盖
-- 🤖 **多AI提供商支持**：内置支持OpenAI、DeepSeek、Anthropic、Google等主流AI服务
-- 📱 **响应式设计**：支持移动端和桌面端
-- 🔒 **类型安全**：完全使用TypeScript编写
-- ⚙️ **配置灵活**：支持自定义提供商和配置字段
-- 🔄 **状态持久化**：自动保存选中状态，下次打开时自动选中上次的选择
-- 📡 **事件驱动架构**：提供统一的管理器实例，支持多组件共享状态
+### AI Model Selector
+- ✨ **No Third-party UI Dependencies**: Built entirely with native React and CSS
+- 🔧 **Flexible Storage Options**: Supports localStorage, API, and custom storage
+- 🎨 **Customizable Styling**: Provides base styles with CSS variable overrides
+- 🤖 **Multi-AI Provider Support**: Built-in support for mainstream AI services like OpenAI, DeepSeek, Anthropic, Google, etc.
+- 📱 **Responsive Design**: Supports both mobile and desktop
+- 🔒 **Type Safety**: Fully written in TypeScript
+- ⚙️ **Flexible Configuration**: Supports custom providers and configuration fields
+- 🔄 **State Persistence**: Automatically saves selected state, auto-selects previous choice on next open
+- 📡 **Event-Driven Architecture**: Provides unified manager instances supporting multi-component state sharing
 
-### 统一AI消息接发器 (Unified AIMessage Transceiver)
-- 🔄 **统一接口**：使用相同的API与不同AI服务商交互
-- 🚀 **简单易用**：简洁的API设计，快速上手
-- 🔌 **可扩展**：支持添加新的AI服务商
-- 💬 **消息流**：支持流式响应和普通响应
-- 🛡️ **类型安全**：完整的TypeScript类型支持
+### Unified AI Message Transceiver
+- 🔄 **Unified Interface**: Use the same API to interact with different AI service providers
+- 🚀 **Easy to Use**: Clean API design for quick onboarding
+- 🔌 **Extensible**: Supports adding new AI service providers
+- 💬 **Message Streaming**: Supports both streaming and regular responses
+- 🛡️ **Type Safety**: Complete TypeScript type support
 
-## 📦 安装
+## 📦 Installation
 
-** 注意：尚在自用并优化中，未发布成 npm 包 ** 
+**Note: Currently for personal use and optimization, not published as npm package**
 
 ```bash
 npm install react-ai-model-manager
-# 或
+# or
 yarn add react-ai-model-manager
 ```
 
 ### Peer Dependencies
 
-需要安装以下peer dependencies：
+Install the following peer dependencies:
 
 ```bash
 npm install react react-dom
-# 或
+# or
 yarn add react react-dom
 ```
 
-### AI SDK依赖（可选）
+### AI SDK Dependencies (Optional)
 
-根据需要安装对应的AI SDK：
+Install corresponding AI SDKs as needed:
 
 ```bash
 # OpenAI
@@ -55,13 +57,12 @@ npm install @ai-sdk/openai
 # DeepSeek
 npm install @ai-sdk/deepseek
 
-# 还有更多其他
-
+# And many more others
 ```
 
-## 🎯 快速开始
+## 🎯 Quick Start
 
-### AI模型选择器 - 基础用法
+### AI Model Selector - Basic Usage
 
 ```tsx
 import React, { useState } from 'react';
@@ -84,7 +85,7 @@ function App() {
 }
 ```
 
-### AI模型选择器 - 使用统一管理器
+### AI Model Selector - Using Unified Manager
 
 ```tsx
 import React, { useState, useEffect } from 'react';
@@ -95,13 +96,13 @@ function App() {
   const [selectedModel, setSelectedModel] = useState<AIModelConfig | null>(null);
 
   useEffect(() => {
-    // 监听选择变化（第一次加载也会触发）
+    // Listen for selection changes (triggers on first load too)
     const unsubscribe = aiModelSelected.onChange((config) => {
       setSelectedModel(config);
-      console.log('模型选择变化:', config);
+      console.log('Model selection changed:', config);
     });
 
-    // 初始化管理器
+    // Initialize manager
     aiModelSelected.initialize();
 
     return unsubscribe;
@@ -111,15 +112,15 @@ function App() {
     <div>
       <AIModelSelect
         mode="select"
-        placeholder="请选择AI模型"
+        placeholder="Please select AI model"
         manager={aiModelSelected}
       />
       
       {selectedModel && (
         <div>
-          <h3>当前选中的模型:</h3>
-          <p>名称: {selectedModel.name}</p>
-          <p>提供商: {selectedModel.provider}</p>
+          <h3>Currently Selected Model:</h3>
+          <p>Name: {selectedModel.name}</p>
+          <p>Provider: {selectedModel.provider}</p>
         </div>
       )}
     </div>
@@ -127,37 +128,37 @@ function App() {
 }
 ```
 
-### 统一AI消息接发器 - 基础用法
+### Unified AI Message Transceiver - Basic Usage
 
 ```tsx
 import { createAIModelSender } from 'react-ai-model-manager';
 
-// 创建发送器实例
+// Create sender instance
 const sender = createAIModelSender({
-  provider: 'volcengine', // AI服务商
+  provider: 'volcengine', // AI service provider
   config: {
     apiKey: 'your-api-key',
-    // 其他配置...
+    // Other configurations...
   }
 });
 
-// 发送消息
+// Send message
 const response = await sender.sendMessage({
   messages: [
-    { role: 'user', content: '你好，请介绍一下自己' }
+    { role: 'user', content: 'Hello, please introduce yourself' }
   ]
 });
 
 console.log(response.content);
 ```
 
-### 统一AI消息接发器 - 流式响应
+### Unified AI Message Transceiver - Streaming Response
 
 ```tsx
-// 流式响应
+// Streaming response
 const stream = await sender.sendMessageStream({
   messages: [
-    { role: 'user', content: '请写一个关于春天的诗' }
+    { role: 'user', content: 'Please write a poem about spring' }
   ]
 });
 
@@ -165,18 +166,17 @@ for await (const chunk of stream) {
   if (chunk.type === 'content') {
     process.stdout.write(chunk.content);
   } else if (chunk.type === 'done') {
-    console.log('\n完成');
+    console.log('\nComplete');
   }
 }
 ```
+## 📚 Detailed Usage Guide
 
-## 📚 详细使用指南
+### AI Model Selector - Advanced Configuration
 
-### AI模型选择器 - 高级配置
+[Detailed Documentation](./examples/AIModelSelector/README.md)
 
-[详细文档](./examples/AIModelSelector/README.md)
-
-#### 自定义存储方式
+#### Custom Storage Method
 
 ```tsx
 import React from 'react';
@@ -184,16 +184,16 @@ import { AIModelSelect, createAIModelManager } from 'react-ai-model-manager';
 import type { StorageConfig } from 'react-ai-model-manager/types';
 
 function CustomStorageExample() {
-  // 创建自定义管理器实例
+  // Create custom manager instance
   const customManager = createAIModelManager({
     type: 'localStorage',
     localStorageKey: 'my-custom-configs'
   });
 
   useEffect(() => {
-    // 监听配置列表变化
+    // Listen for configuration list changes
     const unsubscribe = customManager.onConfigsChange((configs) => {
-      console.log('配置列表变化:', configs);
+      console.log('Configuration list changed:', configs);
     });
 
     customManager.initialize();
@@ -205,13 +205,13 @@ function CustomStorageExample() {
       mode="list"
       manager={customManager}
       showAddButton={true}
-      addButtonText="添加新模型"
+      addButtonText="Add New Model"
     />
   );
 }
 ```
 
-#### API存储方式
+#### API Storage Method
 
 ```tsx
 import React from 'react';
@@ -239,39 +239,39 @@ function APIStorageExample() {
     <AIModelSelect
       mode="select"
       manager={apiManager}
-      placeholder="从API加载的模型"
+      placeholder="Models loaded from API"
     />
   );
 }
 ```
 
-### 统一AI消息接发器 - 高级功能
+### Unified AI Message Transceiver - Advanced Features
 
-[详细文档](./examples/UnifiedAIChatTransceiver/README.md)
+[Detailed Documentation](./examples/UnifiedAIChatTransceiver/README.md)
 
-#### 多轮对话
+#### Multi-turn Conversation
 
 ```tsx
-// 多轮对话
+// Multi-turn conversation
 const conversation = [
-  { role: 'user', content: '你好' },
-  { role: 'assistant', content: '你好！有什么可以帮助你的吗？' },
-  { role: 'user', content: '请介绍一下机器学习' }
+  { role: 'user', content: 'Hello' },
+  { role: 'assistant', content: 'Hello! How can I help you?' },
+  { role: 'user', content: 'Please introduce machine learning' }
 ];
 
 const response = await sender.sendMessage({
   messages: conversation
 });
 
-console.log('AI回复:', response.content);
+console.log('AI response:', response.content);
 ```
 
-#### 自定义参数
+#### Custom Parameters
 
 ```tsx
 const response = await sender.sendMessage({
   messages: [
-    { role: 'user', content: '请写一个故事' }
+    { role: 'user', content: 'Please write a story' }
   ],
   options: {
     temperature: 0.7,
@@ -281,29 +281,29 @@ const response = await sender.sendMessage({
 });
 ```
 
-#### 错误处理
+#### Error Handling
 
 ```tsx
 try {
   const response = await sender.sendMessage({
     messages: [
-      { role: 'user', content: '测试消息' }
+      { role: 'user', content: 'Test message' }
     ]
   });
 } catch (error) {
   if (error.code === 'RATE_LIMIT') {
-    console.log('请求频率过高，请稍后重试');
+    console.log('Request rate too high, please try again later');
   } else if (error.code === 'INVALID_API_KEY') {
-    console.log('API密钥无效');
+    console.log('Invalid API key');
   } else {
-    console.log('发送失败:', error.message);
+    console.log('Send failed:', error.message);
   }
 }
 ```
 
-## 🎨 主题和样式配置
+## 🎨 Theme and Style Configuration
 
-### 主题模式
+### Theme Modes
 
 ```tsx
 import React from 'react';
@@ -312,32 +312,32 @@ import { AIModelSelect } from 'react-ai-model-manager';
 function ThemeExample() {
   return (
     <div>
-      {/* 亮色主题 */}
+      {/* Light theme */}
       <AIModelSelect
         mode="select"
         theme="light"
-        placeholder="亮色主题"
+        placeholder="Light theme"
       />
       
-      {/* 暗色主题 */}
+      {/* Dark theme */}
       <AIModelSelect
         mode="list"
         theme="dark"
-        placeholder="暗色主题"
+        placeholder="Dark theme"
       />
       
-      {/* 系统自动 */}
+      {/* System auto */}
       <AIModelSelect
         mode="select"
         theme="system"
-        placeholder="系统自动"
+        placeholder="System auto"
       />
     </div>
   );
 }
 ```
 
-### 自定义样式
+### Custom Styling
 
 ```tsx
 import React from 'react';
@@ -364,32 +364,32 @@ function CustomStyleExample() {
 }
 ```
 
-## 🔧 支持的服务商
+## 🔧 Supported Service Providers
 
-### AI模型选择器支持的服务商
+### AI Model Selector Supported Providers
 
-| 提供商 | 枚举值 | NPM包 | 描述 |
-|--------|--------|-------|------|
-| OpenAI | AIProvider.OPENAI | @ai-sdk/openai | OpenAI GPT模型 |
-| DeepSeek | AIProvider.DEEPSEEK | @ai-sdk/deepseek | DeepSeek AI模型 |
-| Anthropic | AIProvider.ANTHROPIC | @ai-sdk/anthropic | Anthropic Claude模型 |
-| Google | AIProvider.GOOGLE | @ai-sdk/google | Google Gemini模型 |
-| Mistral | AIProvider.MISTRAL | @ai-sdk/mistral | Mistral AI模型 |
-| Cohere | AIProvider.COHERE | @ai-sdk/cohere | Cohere AI模型 |
-| Azure | AIProvider.AZURE | @ai-sdk/azure | Azure OpenAI服务 |
-| Ollama | AIProvider.OLLAMA | ollama | 本地Ollama模型 |
+| Provider | Enum Value | NPM Package | Description |
+|----------|------------|-------------|-------------|
+| OpenAI | AIProvider.OPENAI | @ai-sdk/openai | OpenAI GPT models |
+| DeepSeek | AIProvider.DEEPSEEK | @ai-sdk/deepseek | DeepSeek AI models |
+| Anthropic | AIProvider.ANTHROPIC | @ai-sdk/anthropic | Anthropic Claude models |
+| Google | AIProvider.GOOGLE | @ai-sdk/google | Google Gemini models |
+| Mistral | AIProvider.MISTRAL | @ai-sdk/mistral | Mistral AI models |
+| Cohere | AIProvider.COHERE | @ai-sdk/cohere | Cohere AI models |
+| Azure | AIProvider.AZURE | @ai-sdk/azure | Azure OpenAI service |
+| Ollama | AIProvider.OLLAMA | ollama | Local Ollama models |
 
-### AI消息适配器支持的服务商
+### AI Message Transceiver Supported Providers
 
-#### Volcengine (火山引擎)
+#### Volcengine
 
 ```tsx
 const sender = createAIModelSender({
   provider: 'volcengine',
   config: {
     apiKey: 'your-volcengine-key',
-    region: 'cn-beijing', // 可选
-    model: 'deepseek-v3.1' // 可选，默认模型
+    region: 'cn-beijing', // optional
+    model: 'deepseek-v3.1' // optional, default model
   }
 });
 ```
@@ -401,89 +401,89 @@ const sender = createAIModelSender({
   provider: 'openai',
   config: {
     apiKey: 'your-openai-key',
-    baseURL: 'https://api.openai.com/v1', // 可选
-    model: 'gpt-4' // 可选，默认模型
+    baseURL: 'https://api.openai.com/v1', // optional
+    model: 'gpt-4' // optional, default model
   }
 });
 ```
 
-## 📖 API 参考
+## 📖 API Reference
 
-### AI模型选择器 API
+### AI Model Selector API
 
 #### AIModelSelect Props
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `mode` | `'select' \| 'list'` | `'select'` | 显示模式 |
-| `selectedModelId` | `string` | `undefined` | 当前选中的模型ID |
-| `onModelChange` | `(modelId: string) => void` | `undefined` | 模型选择变化回调 |
-| `onConfigChange` | `(configs: AIModelConfig[]) => void` | `undefined` | 配置列表变化回调 |
-| `theme` | `'light' \| 'dark' \| 'system'` | `'system'` | 主题模式 |
-| `className` | `string` | `''` | 自定义CSS类名 |
-| `customClassName` | `string` | `''` | 自定义样式类名 |
-| `style` | `React.CSSProperties` | `undefined` | 内联样式 |
-| `storage` | `StorageConfig` | `undefined` | 存储配置 |
-| `supportedProviders` | `AIProvider[]` | `[OPENAI, DEEPSEEK, ...]` | 支持的提供商 |
-| `customProviders` | `AIProviderMeta[]` | `[]` | 自定义提供商 |
-| `showAddButton` | `boolean` | `true` | 是否显示添加按钮 |
-| `addButtonText` | `string` | `'添加AI模型'` | 添加按钮文本 |
-| `allowDelete` | `boolean` | `true` | 是否允许删除 |
-| `placeholder` | `string` | `'请选择AI模型'` | 占位符文本 |
-| `manager` | `AIModelManager` | `undefined` | 管理器实例 |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `mode` | `'select' \| 'list'` | `'select'` | Display mode |
+| `selectedModelId` | `string` | `undefined` | Currently selected model ID |
+| `onModelChange` | `(modelId: string) => void` | `undefined` | Model selection change callback |
+| `onConfigChange` | `(configs: AIModelConfig[]) => void` | `undefined` | Configuration list change callback |
+| `theme` | `'light' \| 'dark' \| 'system'` | `'system'` | Theme mode |
+| `className` | `string` | `''` | Custom CSS class name |
+| `customClassName` | `string` | `''` | Custom style class name |
+| `style` | `React.CSSProperties` | `undefined` | Inline styles |
+| `storage` | `StorageConfig` | `undefined` | Storage configuration |
+| `supportedProviders` | `AIProvider[]` | `[OPENAI, DEEPSEEK, ...]` | Supported providers |
+| `customProviders` | `AIProviderMeta[]` | `[]` | Custom providers |
+| `showAddButton` | `boolean` | `true` | Whether to show add button |
+| `addButtonText` | `string` | `'Add AI Model'` | Add button text |
+| `allowDelete` | `boolean` | `true` | Whether to allow deletion |
+| `placeholder` | `string` | `'Please select AI model'` | Placeholder text |
+| `manager` | `AIModelManager` | `undefined` | Manager instance |
 
-#### aiModelSelected 方法
+#### aiModelSelected Methods
 
-| 方法 | 参数 | 返回值 | 说明 |
-|------|------|--------|------|
-| `onChange(callback)` | `(config: AIModelConfig \| null) => void` | `() => void` | 监听选择变化 |
-| `onConfigsChange(callback)` | `(configs: AIModelConfig[]) => void` | `() => void` | 监听配置列表变化 |
-| `getSelectedModel()` | 无 | `AIModelConfig \| null` | 获取当前选中的模型 |
-| `getSelectedModelId()` | 无 | `string \| null` | 获取当前选中的模型ID |
-| `getConfigs()` | 无 | `AIModelConfig[]` | 获取所有配置 |
-| `getConfigById(id)` | `string` | `AIModelConfig \| null` | 根据ID获取配置 |
-| `setSelectedModel(modelId)` | `string \| null` | `Promise<void>` | 设置选中的模型 |
-| `saveConfig(config)` | `AIModelConfig` | `Promise<AIModelConfig>` | 保存配置 |
-| `deleteConfig(id)` | `string` | `Promise<void>` | 删除配置 |
-| `updateConfig(id, updates)` | `string, Partial<AIModelConfig>` | `Promise<AIModelConfig>` | 更新配置 |
-| `initialize()` | 无 | `Promise<void>` | 初始化管理器 |
-| `destroy()` | 无 | `void` | 销毁管理器 |
+| Method | Parameters | Return Value | Description |
+|--------|------------|--------------|-------------|
+| `onChange(callback)` | `(config: AIModelConfig \| null) => void` | `() => void` | Listen for selection changes |
+| `onConfigsChange(callback)` | `(configs: AIModelConfig[]) => void` | `() => void` | Listen for configuration list changes |
+| `getSelectedModel()` | None | `AIModelConfig \| null` | Get currently selected model |
+| `getSelectedModelId()` | None | `string \| null` | Get currently selected model ID |
+| `getConfigs()` | None | `AIModelConfig[]` | Get all configurations |
+| `getConfigById(id)` | `string` | `AIModelConfig \| null` | Get configuration by ID |
+| `setSelectedModel(modelId)` | `string \| null` | `Promise<void>` | Set selected model |
+| `saveConfig(config)` | `AIModelConfig` | `Promise<AIModelConfig>` | Save configuration |
+| `deleteConfig(id)` | `string` | `Promise<void>` | Delete configuration |
+| `updateConfig(id, updates)` | `string, Partial<AIModelConfig>` | `Promise<AIModelConfig>` | Update configuration |
+| `initialize()` | None | `Promise<void>` | Initialize manager |
+| `destroy()` | None | `void` | Destroy manager |
 
-### AI消息适配器 API
+### AI Message Transceiver API
 
-#### 核心接口
+#### Core Interfaces
 
 #### `createAIModelSender(config)`
 
-创建AI消息发送器实例。
+Create AI message sender instance.
 
-**参数:**
-- `config.provider`: 服务商名称
-- `config.config`: 服务商配置
+**Parameters:**
+- `config.provider`: Service provider name
+- `config.config`: Service provider configuration
 
-**返回:** `AIModelSender` 实例
+**Returns:** `AIModelSender` instance
 
 #### `sender.sendMessage(request)`
 
-发送消息并获取回复。
+Send message and get response.
 
-**参数:**
-- `request.messages`: 消息数组
-- `request.options`: 可选参数 (temperature, maxTokens等)
+**Parameters:**
+- `request.messages`: Message array
+- `request.options`: Optional parameters (temperature, maxTokens, etc.)
 
-**返回:** `Promise<SendMessageResponse>`
+**Returns:** `Promise<SendMessageResponse>`
 
 #### `sender.sendMessageStream(request)`
 
-发送消息并获取流式回复。
+Send message and get streaming response.
 
-**参数:**
-- `request.messages`: 消息数组
-- `request.options`: 可选参数
+**Parameters:**
+- `request.messages`: Message array
+- `request.options`: Optional parameters
 
-**返回:** `Promise<AsyncIterable<ChatStreamResponse>>`
+**Returns:** `Promise<AsyncIterable<ChatStreamResponse>>`
 
-### 类型定义
+### Type Definitions
 
 ```typescript
 interface SendMessageRequest {
@@ -529,11 +529,11 @@ interface AIModelConfig {
 }
 ```
 
-## 🎯 最佳实践
+## 🎯 Best Practices
 
-### AI模型选择器最佳实践
+### AI Model Selector Best Practices
 
-#### 1. 错误处理
+#### 1. Error Handling
 
 ```tsx
 const sendMessageWithRetry = async (sender: AIModelSender, request: SendMessageRequest, maxRetries = 3) => {
@@ -548,7 +548,7 @@ const sendMessageWithRetry = async (sender: AIModelSender, request: SendMessageR
 };
 ```
 
-#### 2. 消息管理
+#### 2. Message Management
 
 ```tsx
 class ConversationManager {
@@ -575,109 +575,110 @@ class ConversationManager {
 }
 ```
 
-### 注意事项
+### Important Notes
 
-1. **选中状态持久化**: 选中状态会自动保存到 localStorage，key 为 `{localStorageKey}-selected`
-2. **管理器实例**: 管理器实例是单例的，多个组件可以共享同一个实例
-3. **内存泄漏**: 记得在组件卸载时取消订阅回调，避免内存泄漏
-4. **初始化**: 使用前需要调用 `initialize()` 方法
-5. **命名规范**: 使用小写字母开头的命名，避免与React组件冲突
-6. **存储方式**: 支持localStorage、API、自定义存储方式
-7. **事件驱动**: 基于事件回调的设计，支持多个组件共享同一个管理器实例
+1. **Selection State Persistence**: Selected state is automatically saved to localStorage with key `{localStorageKey}-selected`
+2. **Manager Instance**: Manager instances are singletons, multiple components can share the same instance
+3. **Memory Leaks**: Remember to unsubscribe callbacks when components unmount to avoid memory leaks
+4. **Initialization**: Call `initialize()` method before use
+5. **Naming Conventions**: Use lowercase letter naming to avoid conflicts with React components
+6. **Storage Methods**: Supports localStorage, API, and custom storage methods
+7. **Event-Driven**: Event callback-based design supporting multiple components sharing the same manager instance
 
-## 🚀 演示应用
+## 🚀 Demo Applications
 
-项目包含完整的演示应用，展示组件的各种功能和用法。
+The project includes complete demo applications showcasing various features and usage of the components.
 
-### 运行演示
+### Running Demos
 
 ```bash
-# AI模型选择器演示
+# AI Model Selector demo
 cd examples/AIModelSelector && npm install && npm run dev
 
-# AI消息适配器演示
+# AI Message Transceiver demo
 cd examples/AIModelSender && npm install && npm run dev
 ```
 
-### 演示特性
+### Demo Features
 
-- 🌖 亮色主题演示
-- 🌙 暗色主题演示
-- 📱 下拉选择模式
-- 📋 列表模式
-- 🎨 自定义样式配置
-- 💾 多种存储方式（LocalStorage、API模拟）
-- ⚙️ AI模型配置管理
-- 🔄 选中状态持久化
-- 📡 事件驱动架构
-- 💬 消息流式响应
-- 🛡️ 错误处理演示
+- 🌖 Light theme demo
+- 🌙 Dark theme demo
+- 📱 Dropdown selection mode
+- 📋 List mode
+- 🎨 Custom style configuration
+- 💾 Multiple storage methods (LocalStorage, API simulation)
+- ⚙️ AI model configuration management
+- 🔄 Selection state persistence
+- 📡 Event-driven architecture
+- 💬 Message streaming response
+- 🛡️ Error handling demo
 
-## 🛠️ 开发
+## 🛠️ Development
 
-### 项目结构
+### Project Structure
 
 ```
 packages/
-├── ai-model-manager/     # AI模型选择器
-│   ├── components/       # React组件
-│   ├── types/           # TypeScript类型定义
-│   ├── utils/           # 工具函数
-│   └── styles/          # 样式文件
-├── unified-AI-chat-transceiver/      # AI消息适配器
-│   ├── src/             # 源代码
-│   ├── types/           # TypeScript类型定义
-│   └── providers/       # AI服务商实现
+├── ai-model-manager/     # AI Model Selector
+│   ├── components/       # React components
+│   ├── types/           # TypeScript type definitions
+│   ├── utils/           # Utility functions
+│   └── styles/          # Style files
+├── unified-AI-chat-transceiver/      # AI Message Transceiver
+│   ├── src/             # Source code
+│   ├── types/           # TypeScript type definitions
+│   └── providers/       # AI service provider implementations
 examples/
-├── AIModelSelector/     # AI模型选择器演示
-└── AIModelSender/       # AI消息适配器演示
+├── AIModelSelector/     # AI Model Selector demo
+└── AIModelSender/       # AI Message Transceiver demo
 ```
 
-### 本地开发
+### Local Development
 
 ```bash
-# 克隆项目
+# Clone project
 git clone <repository-url>
 cd react-ai-model-manager
 
-# 安装依赖
+# Install dependencies
 yarn install
 
-# 启动开发服务器
+# Start development server
 yarn dev
 
-# 构建库文件
+# Build library files
 yarn build:lib
 
-# 构建演示应用
+# Build demo applications
 yarn build
 ```
 
-### 添加新的AI提供商
+### Adding New AI Providers
 
-1. 在`packages/ai-model-manager/types/index.ts`中添加新的提供商枚举值
-2. 在`packages/ai-model-manager/utils/providers.ts`中添加提供商元数据配置
-3. 在`packages/unified-AI-chat-transceiver/src/providers/`中添加新的服务商实现
-4. 更新文档和类型定义
+1. Add new provider enum value in `packages/ai-model-manager/types/index.ts`
+2. Add provider metadata configuration in `packages/ai-model-manager/utils/providers.ts`
+3. Add new service provider implementation in `packages/unified-AI-chat-transceiver/src/providers/`
+4. Update documentation and type definitions
 
-## 📄 许可证
+## 📄 License
 
 MIT
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎提交Issue和Pull Request！
+Welcome to submit Issues and Pull Requests!
 
-## 📝 更新日志
+## 📝 Changelog
 
-- 初始版本发布
-- 支持主流AI提供商
-- 提供localStorage和API存储方式
-- 响应式设计和自定义主题支持
-- AI模型选择器状态持久化
-- AI消息适配器统一接口
-- 流式响应支持
+- Initial version release
+- Support for mainstream AI providers
+- Provide localStorage and API storage methods
+- Responsive design and custom theme support
+- AI Model Selector state persistence
+- AI Message Transceiver unified interface
+- Streaming response support
 
-## todo
+## TODO
 
-- 思维链
+- Chain of Thought
+
