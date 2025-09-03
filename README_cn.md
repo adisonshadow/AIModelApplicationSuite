@@ -19,12 +19,22 @@
 - 🔄 **状态持久化**：自动保存选中状态，下次打开时自动选中上次的选择
 - 📡 **事件驱动架构**：提供统一的管理器实例，支持多组件共享状态
 
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/s1.png" width="1024" />
+
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/s2.png" width="400" />
+
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/s3.png" width="600" />
+
 ### 统一AI消息接发器 (Unified AIMessage Transceiver)
 - 🔄 **统一接口**：使用相同的API与不同AI服务商交互
 - 🚀 **简单易用**：简洁的API设计，快速上手
 - 🔌 **可扩展**：支持添加新的AI服务商
 - 💬 **消息流**：支持流式响应和普通响应
 - 🛡️ **类型安全**：完整的TypeScript类型支持
+
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/u1.png" width="1024" />
+
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/u2.png" width="800" />
 
 ## 📦 安装
 

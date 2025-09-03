@@ -19,12 +19,22 @@ This AI Model Application Suite is developed in TypeScript and published as npm 
 - 🔄 **State Persistence**: Automatically saves selected state, auto-selects previous choice on next open
 - 📡 **Event-Driven Architecture**: Provides unified manager instances supporting multi-component state sharing
 
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/s1.png" width="1024" />
+
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/s2.png" width="400" />
+
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/s3.png" width="600" />
+
 ### Unified AI Message Transceiver
 - 🔄 **Unified Interface**: Use the same API to interact with different AI service providers
 - 🚀 **Easy to Use**: Clean API design for quick onboarding
 - 🔌 **Extensible**: Supports adding new AI service providers
 - 💬 **Message Streaming**: Supports both streaming and regular responses
 - 🛡️ **Type Safety**: Complete TypeScript type support
+
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/u1.png" width="1024" />
+
+<img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/u2.png" width="800" />
 
 ## 📦 Installation
 
