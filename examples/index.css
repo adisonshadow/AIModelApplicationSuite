@@ -147,7 +147,7 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* AI模型发送器样式 */
+/* AI消息适配器样式 */
 .ai-model-sender {
   /* background: white;
   border-radius: 12px;
@@ -275,7 +275,7 @@ body {
   font-style: italic;
 }
 
-/* AI模型发送器详细样式 */
+/* AI消息适配器详细样式 */
 .sender-header {
   text-align: center;
   margin-bottom: 2rem;

@@ -31,7 +31,7 @@ const Navigation: React.FC = () => {
               className={`nav-link ${location.pathname === '/aimodel-sender' ? 'active' : ''}`}
             >
               <span className="nav-icon">🚀</span>
-              AI模型发送器
+              AI消息适配器
             </Link>
           </li>
         </ul>

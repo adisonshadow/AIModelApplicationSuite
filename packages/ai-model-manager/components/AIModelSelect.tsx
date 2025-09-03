@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AIModelSelectProps, AIModelConfig, AIProvider, AIProviderMeta } from '../types';
 import { StorageManager } from '../utils/storage';
+import { AIModelManager as Manager } from '../utils/manager';
 import { getProviderMeta } from '../utils/providers';
 import AIModelConfModal from './AIModelConfModal';
 import AIModelManager from './AIModelManager';
@@ -27,7 +28,8 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   showAddButton = true,
   addButtonText = '添加AI模型',
   allowDelete = true,
-  placeholder = '请选择AI模型'
+  placeholder = '请选择AI模型',
+  manager
 }) => {
   // 状态管理
   const [configs, setConfigs] = useState<AIModelConfig[]>([]);
@@ -37,6 +39,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   const [showManager, setShowManager] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModelConfig | undefined>();
   const [storageManager] = useState(() => new StorageManager(storage));
+  const [modelManager] = useState(() => manager || new Manager(storage));
   
   // 跟踪打开的菜单
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -67,20 +70,48 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
     try {
       setLoading(true);
       setError('');
-      const loadedConfigs = await storageManager.loadConfigs();
+      const loadedConfigs = await modelManager.loadConfigs();
       setConfigs(loadedConfigs);
-      onConfigChange?.(loadedConfigs);
+      // 只有在没有传入 manager 时才调用 onConfigChange，避免重复
+      if (!manager) {
+        onConfigChange?.(loadedConfigs);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载配置失败');
     } finally {
       setLoading(false);
     }
-  }, [storageManager, onConfigChange]);
+  }, [modelManager, onConfigChange, manager]);
 
   // 组件挂载时加载数据
   useEffect(() => {
-    loadConfigs();
-  }, [loadConfigs]);
+    if (!manager) {
+      // 没有传入 manager 时，手动加载
+      loadConfigs();
+    } else {
+      // 传入 manager 时，直接获取当前配置
+      const currentConfigs = modelManager.getConfigs();
+      if (currentConfigs.length > 0) {
+        setConfigs(currentConfigs);
+        setLoading(false);
+      }
+      // 如果配置为空，等待监听器通知
+    }
+  }, [loadConfigs, manager, modelManager]);
+
+  // 监听管理器中的配置变化
+  useEffect(() => {
+    const unsubscribe = modelManager.onConfigsChange((newConfigs: AIModelConfig[]) => {
+      setConfigs(newConfigs);
+      setLoading(false); // 确保加载状态被清除
+      // 只有在没有传入 manager 时才调用 onConfigChange，避免重复
+      if (!manager) {
+        onConfigChange?.(newConfigs);
+      }
+    });
+
+    return unsubscribe;
+  }, [modelManager, onConfigChange, manager]);
 
   // 点击外部关闭菜单
   useEffect(() => {
@@ -103,9 +134,13 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   }, [openMenuId]);
 
   // 处理模型选择
-  const handleModelSelect = useCallback((modelId: string) => {
-    onModelChange?.(modelId);
-  }, [onModelChange]);
+  const handleModelSelect = useCallback(async (modelId: string) => {
+    await modelManager.setSelectedModel(modelId);
+    // 只有在没有传入 manager 时才调用 onModelChange，避免重复
+    if (!manager) {
+      onModelChange?.(modelId);
+    }
+  }, [modelManager, onModelChange, manager]);
 
   // 处理添加新模型
   const handleAddModel = useCallback(() => {
@@ -126,34 +161,31 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
     }
     
     try {
-      await storageManager.deleteConfig(modelId);
-      await loadConfigs();
+      await modelManager.deleteConfig(modelId);
     } catch (err) {
       setError(err instanceof Error ? err.message : '删除配置失败');
     }
-  }, [storageManager, loadConfigs]);
+  }, [modelManager]);
 
   // 处理启用/禁用模型
   const handleToggleModel = useCallback(async (modelId: string, enabled: boolean) => {
     try {
-      await storageManager.updateConfig(modelId, { enabled });
-      await loadConfigs();
+      await modelManager.updateConfig(modelId, { enabled });
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新配置失败');
     }
-  }, [storageManager, loadConfigs]);
+  }, [modelManager]);
 
   // 处理保存模型配置
   const handleSaveModel = useCallback(async (config: AIModelConfig) => {
     try {
-      await storageManager.saveConfig(config);
+      await modelManager.saveConfig(config);
       setShowModal(false);
       setEditingModel(undefined);
-      await loadConfigs();
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存配置失败');
     }
-  }, [storageManager, loadConfigs]);
+  }, [modelManager]);
 
   // 处理关闭弹窗
   const handleCloseModal = useCallback(() => {
@@ -207,7 +239,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   // 渲染下拉选择模式
   const renderSelectMode = useCallback(() => {
     const enabledConfigs = configs.filter(config => config.enabled);
-    // const selectedConfig = enabledConfigs.find(config => config.id === selectedModelId);
+    const currentSelectedId = selectedModelId || modelManager.getSelectedModelId();
     
     const handleSelectChange = (value: string) => {
       if (value === '__add_model__') {
@@ -230,7 +262,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
         <div className="ai-select-container">
           <select
             className="ai-select"
-            value={selectedModelId || ''}
+            value={currentSelectedId || ''}
             onChange={(e) => handleSelectChange(e.target.value)}
             disabled={loading}
           >
@@ -250,12 +282,15 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
         </div>
         
         {/* 当前模型信息 */}
-        {/* {selectedConfig && (
-          <div className="ai-selected-model-info">
-            <div className="ai-model-name">{selectedConfig.name}</div>
-            <div className="ai-model-provider">{getProviderDisplayName(selectedConfig.provider)}</div>
-          </div>
-        )} */}
+        {(() => {
+          const selectedConfig = enabledConfigs.find(config => config.id === currentSelectedId);
+          return selectedConfig && (
+            <div className="ai-selected-model-info">
+              <div className="ai-model-name">{selectedConfig.name}</div>
+              <div className="ai-model-provider">{getProviderDisplayName(selectedConfig.provider)}</div>
+            </div>
+          );
+        })()}
         
         {/* 配置弹窗 */}
         {showModal && (
@@ -282,10 +317,12 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
         )}
       </div>
     );
-  }, [configs, selectedModelId, error, loading, getThemeClassName, className, style, placeholder, handleModelSelect, handleAddModel, getProviderDisplayName, showModal, showManager, handleCloseModal, handleCloseManager, editingModel, handleSaveModel, handleShowManager, getSupportedProviders, storage, supportedProviders, customProviders, customClassName, openMenuId]);
+  }, [configs, selectedModelId, modelManager, error, loading, getThemeClassName, className, style, placeholder, handleModelSelect, handleAddModel, getProviderDisplayName, showModal, showManager, handleCloseModal, handleCloseManager, editingModel, handleSaveModel, handleShowManager, getSupportedProviders, storage, supportedProviders, customProviders, customClassName, openMenuId]);
 
   // 渲染列表模式
   const renderListMode = useCallback(() => {
+    const currentSelectedId = selectedModelId || modelManager.getSelectedModelId();
+    
     return (
       <div className={`${getThemeClassName()} ai-model-select ${className}`} style={style}>
         {/* 错误提示 */}
@@ -299,7 +336,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
         {configs.map((config) => (
           <div
             key={config.id}
-            className={`ai-model-item ${selectedModelId === config.id ? 'selected' : ''}`}
+            className={`ai-model-item ${currentSelectedId === config.id ? 'selected' : ''}`}
             onClick={() => handleModelSelect(config.id)}
           >
             <div className="ai-model-info">

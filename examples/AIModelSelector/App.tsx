@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { AIModelSelect, AIModelManager } from '../../packages/ai-model-manager';
+import { AIModelSelect, AIModelManagerComponent, aiModelSelected } from '../../packages/ai-model-manager';
 import { AIModelConfig, AIProvider, StorageConfig, ThemeMode } from '../../packages/ai-model-manager/types';
 
 // 模拟API调用的演示
@@ -141,6 +141,33 @@ const DemoApp: React.FC = () => {
   const [customStyle, setCustomStyle] = useState(false);
   const [showManager, setShowManager] = useState(false);
   
+  // 添加 aiModelSelected 监听
+  useEffect(() => {
+    // 监听选择变化
+    const unsubscribe = aiModelSelected.onChange((config) => {
+      if (config) {
+        setSelectedModelId(config.id);
+        console.log('aiModelSelected 选择变化:', config);
+      }
+    });
+
+    // 监听配置列表变化
+    const unsubscribeConfigs = aiModelSelected.onConfigsChange((newConfigs) => {
+      setConfigs(newConfigs);
+      console.log('aiModelSelected 配置变化:', newConfigs);
+    });
+
+    // 初始化管理器
+    aiModelSelected.initialize();
+
+    return () => {
+      unsubscribe();
+      unsubscribeConfigs();
+    };
+  }, []);
+
+
+  
   // 新增的样式配置选项
   const [themeMode, setThemeMode] = useState<ThemeMode>('system'); // 主题模式
   const [primaryColor, setPrimaryColor] = useState<string>('blue');
@@ -164,12 +191,12 @@ const DemoApp: React.FC = () => {
       };
 
   const handleModelChange = useCallback((modelId: string) => {
-    setSelectedModelId(modelId);
+    // 不再需要手动设置，因为 aiModelSelected 已经处理了
     console.log('选中的模型ID:', modelId);
   }, []);
 
   const handleConfigChange = useCallback((newConfigs: AIModelConfig[]) => {
-    setConfigs(newConfigs);
+    // 不再需要手动设置，因为 aiModelSelected 已经处理了
     console.log('配置更新:', newConfigs);
   }, []);
 
@@ -671,6 +698,7 @@ const DemoApp: React.FC = () => {
                   ]}
                   placeholder="选择一个AI模型..."
                   customClassName={getCustomClassName()}
+                  manager={aiModelSelected}
               />
             </div>
             </div>
@@ -704,6 +732,7 @@ const DemoApp: React.FC = () => {
                   minWidth: '100%'
                   }}
                   customClassName={getCustomClassName()}
+                  manager={aiModelSelected}
               />
             </div>
             </div>
@@ -746,6 +775,7 @@ const DemoApp: React.FC = () => {
                 ]}
                 placeholder="选择一个AI模型..."
                 customClassName={getCustomClassName()}
+                manager={aiModelSelected}
               />
             </div>
           </div>
@@ -776,6 +806,7 @@ const DemoApp: React.FC = () => {
                 addButtonText="➕ 添加AI模型"
                 allowDelete={true}
                 customClassName={getCustomClassName()}
+                manager={aiModelSelected}
               />
             </div>
           </div>
@@ -823,7 +854,7 @@ const DemoApp: React.FC = () => {
       </div>
 
       {/* AI模型配置管理器 - 在根级别渲染 */}
-      <AIModelManager
+      <AIModelManagerComponent
         visible={showManager}
         theme={themeMode}
         onClose={() => setShowManager(false)}
@@ -845,3 +876,155 @@ const DemoApp: React.FC = () => {
 };
 
 export default DemoApp;
+
+/*
+===============================================================================
+AI模型管理器使用说明文档
+===============================================================================
+
+## 新增功能：aiModelSelected 管理器
+
+### 1. 基本使用
+```typescript
+import { AIModelSelect, aiModelSelected } from '../../packages/ai-model-manager';
+
+function App() {
+  const [selectedModel, setSelectedModel] = useState(null);
+
+  useEffect(() => {
+    // 监听选择变化（第一次加载也会触发）
+    const unsubscribe = aiModelSelected.onChange((config) => {
+      setSelectedModel(config);
+      console.log('模型选择变化:', config);
+    });
+
+    // 初始化管理器
+    aiModelSelected.initialize();
+
+    return unsubscribe;
+  }, []);
+
+  return (
+    <AIModelSelect
+      mode="select"
+      placeholder="请选择AI模型"
+    />
+  );
+}
+```
+
+### 2. 主动查询方法
+```typescript
+// 获取当前选中的模型配置
+const currentModel = aiModelSelected.getSelectedModel();
+
+// 获取当前选中的模型ID
+const currentModelId = aiModelSelected.getSelectedModelId();
+
+// 获取所有配置
+const allConfigs = aiModelSelected.getConfigs();
+```
+
+### 3. 高级使用（自定义管理器实例）
+```typescript
+import { AIModelSelect, createAIModelManager } from '../../packages/ai-model-manager';
+
+function App() {
+  // 创建自定义管理器实例
+  const customManager = createAIModelManager({
+    type: 'localStorage',
+    localStorageKey: 'my-custom-configs'
+  });
+
+  useEffect(() => {
+    // 监听配置列表变化
+    const unsubscribe = customManager.onConfigsChange((configs) => {
+      console.log('配置列表变化:', configs);
+    });
+
+    customManager.initialize();
+    return unsubscribe;
+  }, []);
+
+  return (
+    <AIModelSelect
+      mode="list"
+      manager={customManager}
+      showAddButton={true}
+      addButtonText="添加新模型"
+    />
+  );
+}
+```
+
+### 4. 管理器API
+
+#### 事件监听
+- `onChange(callback)`: 监听选择变化
+- `onConfigsChange(callback)`: 监听配置列表变化
+
+#### 查询方法
+- `getSelectedModel()`: 获取当前选中的模型配置
+- `getSelectedModelId()`: 获取当前选中的模型ID
+- `getConfigs()`: 获取所有配置
+- `getConfigById(id)`: 根据ID获取配置
+
+#### 操作方法
+- `setSelectedModel(modelId)`: 设置选中的模型
+- `saveConfig(config)`: 保存配置
+- `deleteConfig(id)`: 删除配置
+- `updateConfig(id, updates)`: 更新配置
+
+#### 生命周期
+- `initialize()`: 初始化管理器
+- `destroy()`: 销毁管理器（清理回调）
+
+### 5. 存储配置
+
+支持多种存储方式：
+
+```typescript
+// localStorage (默认)
+const manager = createAIModelManager({
+  type: 'localStorage',
+  localStorageKey: 'my-configs'
+});
+
+// API
+const manager = createAIModelManager({
+  type: 'api',
+  api: {
+    getConfigs: () => fetch('/api/configs').then(r => r.json()),
+    saveConfig: (config) => fetch('/api/configs', { method: 'POST', body: JSON.stringify(config) }),
+    deleteConfig: (id) => fetch(`/api/configs/${id}`, { method: 'DELETE' })
+  }
+});
+
+// 自定义
+const manager = createAIModelManager({
+  type: 'custom',
+  custom: {
+    load: () => myCustomStorage.load(),
+    save: (configs) => myCustomStorage.save(configs)
+  }
+});
+```
+
+### 6. 主要特性
+
+1. **选中状态持久化**: 自动保存用户选择的模型，下次打开时自动恢复
+2. **回调通知**: 当选择变更后（第一次加载也会）会通知最新选择的model config
+3. **主动查询**: 可以主动查询当前选中的模型的配置
+4. **多存储支持**: 支持localStorage、API、自定义存储方式
+5. **事件驱动**: 基于事件回调的设计，支持多个组件共享同一个管理器实例
+
+### 7. 注意事项
+
+1. 选中状态会自动保存到 localStorage，key 为 `{localStorageKey}-selected`
+2. 管理器实例是单例的，多个组件可以共享同一个实例
+3. 记得在组件卸载时取消订阅回调，避免内存泄漏
+4. 初始化时会自动加载配置和选中状态
+5. 使用小写字母开头的命名，避免与React组件冲突
+
+===============================================================================
+*/

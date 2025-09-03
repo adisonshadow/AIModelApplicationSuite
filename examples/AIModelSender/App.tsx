@@ -1,12 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Bubble, Sender, Attachments, AttachmentsProps } from '@ant-design/x';
 
 import { Flex, Button, Divider, Switch, Badge, type GetProp, type GetRef } from 'antd';
 import { LinkOutlined, ApiOutlined, CloudUploadOutlined } from '@ant-design/icons';
 
-// AI模型发送器
+// AI消息适配器
 import { createAIModelSender } from '../../packages/ai-model-sender';
 import type { AIModelSender as IAIModelSender } from '../../packages/ai-model-sender';
+
+// AI模型选择器
+import { AIModelSelect, aiModelSelected } from '../../packages/ai-model-manager';
+import { AIProvider } from '../../packages/ai-model-manager/types';
+import type { AIModelConfig } from '../../packages/ai-model-manager/types';
 
 // Suggestion 组件
 import { 
@@ -48,67 +53,6 @@ interface ChatResponse {
   created: number;
 }
 
-// AI模型配置接口 - 与AIModelSelector保持一致
-interface AIModelConfig {
-  id: string;
-  name: string;
-  provider: string;
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-  config: {
-    apiKey: string;
-    baseURL: string;
-    model?: string;
-    jsonParams?: string;
-  };
-}
-
-// 直接从localStorage读取AIModelSelector的配置
-const loadAIModelConfigs = (): AIModelConfig[] => {
-  try {
-    // 尝试读取API模式的配置
-    const apiConfigs = localStorage.getItem('demo-api-configs');
-    if (apiConfigs) {
-      return JSON.parse(apiConfigs).map((config: any) => ({
-        ...config,
-        createdAt: config.createdAt || new Date().toISOString(),
-        updatedAt: config.updatedAt || new Date().toISOString()
-      }));
-    }
-    
-    // 尝试读取localStorage模式的配置
-    const localConfigs = localStorage.getItem('demo-local-configs');
-    if (localConfigs) {
-      return JSON.parse(localConfigs).map((config: any) => ({
-        ...config,
-        createdAt: config.createdAt || new Date().toISOString(),
-        updatedAt: config.updatedAt || new Date().toISOString()
-      }));
-    }
-    
-    // 如果没有配置，返回默认配置
-    return [
-      {
-        id: 'demo-default',
-        name: 'GPT-4 默认配置',
-        provider: 'OpenAI',
-        enabled: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        config: {
-          apiKey: 'sk-demo-key-hidden',
-          baseURL: 'https://api.openai.com/v1',
-          model: 'gpt-4'
-        }
-      }
-    ];
-  } catch (error) {
-    console.error('加载AI模型配置失败:', error);
-    return [];
-  }
-};
-
 // 创建真实AI发送器
 const createRealAISender = (config: AIModelConfig): IAIModelSender => {
   try {
@@ -116,23 +60,51 @@ const createRealAISender = (config: AIModelConfig): IAIModelSender => {
     const convertedConfig = {
       ...config,
       provider: config.provider as any, // 类型转换
-      createdAt: new Date(config.createdAt).getTime(),
-      updatedAt: new Date(config.updatedAt).getTime()
+      createdAt: config.createdAt.getTime(),
+      updatedAt: config.updatedAt.getTime(),
+      config: config.config || { apiKey: '' } // 确保 config 存在
     };
-    return createAIModelSender(convertedConfig);
+    return createAIModelSender(convertedConfig as any);
   } catch (error) {
     console.error('创建AI发送器失败:', error);
     throw error;
   }
 };
 
-// 移除旧的 suggestions 定义，现在使用 components 中的配置
-
-
-
 const AIModelSender: React.FC = () => {
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [configs, setConfigs] = useState<AIModelConfig[]>([]);
+  
+  // 添加 aiModelSelected 监听
+  useEffect(() => {
+    // 监听选择变化
+    const unsubscribe = aiModelSelected.onChange((config) => {
+      if (config) {
+        setSelectedModelId(config.id);
+        console.log('aiModelSelected 选择变化:', config);
+      }
+    });
+
+    // 监听配置列表变化
+    const unsubscribeConfigs = aiModelSelected.onConfigsChange((newConfigs) => {
+      setConfigs(newConfigs);
+      console.log('aiModelSelected 配置变化:', newConfigs);
+    });
+
+    // 初始化管理器
+    aiModelSelected.initialize();
+
+    return () => {
+      unsubscribe();
+      unsubscribeConfigs();
+    };
+  }, []);
+  
+  // 存储配置
+  const storageConfig = useMemo(() => ({
+    type: 'localStorage' as const,
+    localStorageKey: 'demo-local-configs'
+  }), []);
   
   // 聊天相关状态
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -176,39 +148,7 @@ const AIModelSender: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // 加载配置 - 直接从localStorage读取AIModelSelector的配置
-  useEffect(() => {
-    const loadConfigs = () => {
-      try {
-        const configsData = loadAIModelConfigs();
-        setConfigs(configsData);
-        if (configsData.length > 0) {
-          setSelectedModelId(configsData[0].id);
-        }
-      } catch (err) {
-        console.error('加载配置失败:', err);
-      }
-    };
-    
-    loadConfigs();
-    
-    // 监听localStorage变化，实时更新配置
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'demo-api-configs' || e.key === 'demo-local-configs') {
-        loadConfigs();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // 定期检查配置更新（因为同页面localStorage变化不会触发storage事件）
-    const interval = setInterval(loadConfigs, 2000);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
+  // 配置加载已由 AIModelSelect 组件自动处理，无需手动加载
 
   // 发送聊天消息
   const sendChatMessage = async () => {
@@ -272,13 +212,13 @@ const AIModelSender: React.FC = () => {
         id: selectedConfig.id,
         name: selectedConfig.name,
         provider: selectedConfig.provider,
-        model: selectedConfig.config.model,
-        baseURL: selectedConfig.config.baseURL
+        model: selectedConfig.config?.model,
+        baseURL: selectedConfig.config?.baseURL
       },
       requestOptions: {
         stream: streamMode,
-        model: selectedConfig.config.model,
-        jsonParams: selectedConfig.config.jsonParams
+        model: selectedConfig.config?.model,
+        jsonParams: selectedConfig.config?.jsonParams
       },
       fullMessages: aiMessages
     });
@@ -306,7 +246,7 @@ const AIModelSender: React.FC = () => {
           
           // 直接创建流式请求
           const response = await openaiClient.chat.completions.create({
-            model: selectedConfig.config.model || 'deepseek-v3-1-250821',
+            model: selectedConfig.config?.model || 'deepseek-v3-1-250821',
             messages: aiMessages.map((msg: ChatMessage) => ({
               role: msg.role as 'system' | 'user' | 'assistant',
               content: msg.content
@@ -321,7 +261,7 @@ const AIModelSender: React.FC = () => {
           
           let fullContent = '';
           let responseId = '';
-          let model = selectedConfig.config.model || 'deepseek-v3-1-250821';
+          let model = selectedConfig.config?.model || 'deepseek-v3-1-250821';
           let created = Math.floor(Date.now() / 1000);
           
           // 实时处理每个 chunk
@@ -407,8 +347,8 @@ const AIModelSender: React.FC = () => {
         
         const sender = createRealAISender(selectedConfig);
         const options: SendOptions = {
-          model: selectedConfig.config.model,
-          jsonParams: selectedConfig.config.jsonParams
+          model: selectedConfig.config?.model,
+          jsonParams: selectedConfig.config?.jsonParams
         };
         
         const response = await sender.sendChatMessage(aiMessages, options);
@@ -464,14 +404,26 @@ const AIModelSender: React.FC = () => {
   };
 
   // 处理 suggestion 选择
-  const handleSuggestionSelect = (value: string) => {
+  const handleSuggestionSelect = useCallback((value: string) => {
     setSelectedSuggestion(value);
     if (value === 'vis-chart') {
       setInputMessage(`[vis-chart]: `);
     } else {
       setInputMessage(`[${value}]: `);
     }
-  };
+  }, []);
+
+  // 处理模型选择变化
+  const handleModelChange = useCallback((modelId: string) => {
+    // 不再需要手动设置，因为 aiModelSelected 已经处理了
+    console.log('模型选择变化:', modelId);
+  }, []);
+
+  // 处理配置变化
+  const handleConfigChange = useCallback((configs: AIModelConfig[]) => {
+    // 不再需要手动设置，因为 aiModelSelected 已经处理了
+    console.log('配置变化:', configs);
+  }, []);
 
   // 处理回车键发送
   // const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -531,8 +483,8 @@ const AIModelSender: React.FC = () => {
   return (
     <div className="ai-model-sender">
       {/* <div className="sender-header">
-        <h1>🤖 AI模型发送器</h1>
-        <p>这是一个完整的AI模型发送器演示页面，支持聊天对话功能</p>
+        <h1>🤖 AI消息适配器</h1>
+        <p>这是一个完整的AI消息适配器演示页面，支持聊天对话功能</p>
       </div> */}
 
       <div className="sender-container">
@@ -541,49 +493,41 @@ const AIModelSender: React.FC = () => {
           <div className="sidebar-section">
             <h3>🔧 模型配置</h3>
             <div className="model-selector">
-              <select
-                value={selectedModelId}
-                onChange={(e) => setSelectedModelId(e.target.value)}
-                className="model-select"
-              >
-                <option value="">选择AI模型...</option>
-                {configs.map(config => (
-                  <option key={config.id} value={config.id}>
-                    {config.name} ({config.provider})
-                  </option>
-                ))}
-              </select>
+              <AIModelSelect
+                mode="select"
+                theme="light"
+                selectedModelId={selectedModelId}
+                onModelChange={handleModelChange}
+                onConfigChange={handleConfigChange}
+                storage={storageConfig}
+                supportedProviders={[
+                  AIProvider.OPENAI,
+                  AIProvider.OPENAILIKE,
+                  AIProvider.DEEPSEEK,
+                  AIProvider.ANTHROPIC,
+                  AIProvider.GOOGLE,
+                  AIProvider.VOLCENGINE
+                ]}
+                placeholder="选择一个AI模型..."
+                style={{ 
+                  minWidth: '100%'
+                }}
+                manager={aiModelSelected}
+              />
             </div>
             
-            {selectedConfig && (
+            {selectedConfig && selectedConfig.config && (
               <div className="model-info">
                 <div className="info-row">
                   <span className="info-label">模型ID:</span>
                   <span className="info-value">{selectedConfig.config.model || '未设置'}</span>
                 </div>
-                {/* <div className="info-row">
-                  <span className="info-label">API地址:</span>
-                  <span className="info-value">{selectedConfig.config.baseURL}</span>
-                </div> */}
+                <div className="info-row">
+                  <span className="info-label">提供商:</span>
+                  <span className="info-value">{selectedConfig.provider}</span>
+                </div>
               </div>
             )}
-            
-            {/* <div className="config-actions">
-              <button
-                className="config-manager-btn"
-                onClick={refreshConfigs}
-              >
-                🔄 刷新配置
-              </button>
-              
-              <div className="config-status">
-                <small>
-                  📍 配置来源: {configs.length > 0 ? 
-                    (localStorage.getItem('demo-api-configs') ? 'API模式' : 'LocalStorage模式') : 
-                    '无配置'}
-                </small>
-              </div>
-            </div> */}
           </div>
 
           {/* <div className="sidebar-section">

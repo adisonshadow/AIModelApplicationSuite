@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { AIModelConfig, AIProvider, AIModelSender, ChatMessage, SendOptions, ChatResponse, CompletionResponse, CompletionStreamResponse } from '../types';
+import { AIModelConfig, AIProvider, AIModelSender, ChatMessage, SendOptions, ChatResponse, ChatStreamResponse, CompletionResponse, CompletionStreamResponse } from '../types';
 
 export class VolcengineAISender implements AIModelSender {
   private client: OpenAI;
