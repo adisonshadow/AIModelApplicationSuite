@@ -667,9 +667,9 @@ yarn build
 
 ### 添加新的AI提供商
 
-1. 在`packages/ai-model-manager/types/index.ts`中添加新的提供商枚举值
-2. 在`packages/ai-model-manager/utils/providers.ts`中添加提供商元数据配置
-3. 在`packages/unified-AI-chat-transceiver/src/providers/`中添加新的服务商实现
+1. 在`packages/ai_model_application_suite/src/types/index.ts`中添加新的提供商枚举值
+2. 在`packages/ai_model_application_suite/src/utils/providers.ts`中添加提供商元数据配置
+3. 在`packages/ai_model_application_suite/src/providers/`中添加新的服务商实现
 4. 更新文档和类型定义
 
 ## 📄 许可证

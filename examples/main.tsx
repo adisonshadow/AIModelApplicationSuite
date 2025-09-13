@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } f
 import AIModelSelector from './AIModelSelector/App';
 import UnifiedAIChatTransceiver from './UnifiedAIChatTransceiver/App';
 import './index.css';
+// 导入AI组件库的样式
+import 'ai_model_application_suite/styles';
 
 // 导航组件
 const Navigation: React.FC = () => {

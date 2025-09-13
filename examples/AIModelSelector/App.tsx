@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { AIModelSelect, AIModelManagerComponent, aiModelSelected } from '../../packages/ai-model-manager';
-import { AIModelConfig, AIProvider, StorageConfig, ThemeMode } from '../../packages/ai-model-manager/types';
+import { AIModelSelect, AIModelManagerComponent, aiModelSelected } from 'ai_model_application_suite';
+import { AIModelConfig, AIProvider, StorageConfig, ThemeMode } from 'ai_model_application_suite';
 
 // 模拟API调用的演示
 const mockAPI = {
@@ -169,7 +169,7 @@ const DemoApp: React.FC = () => {
 
   
   // 新增的样式配置选项
-  const [themeMode, setThemeMode] = useState<ThemeMode>('system'); // 主题模式
+  const [themeMode] = useState<ThemeMode>('system'); // 主题模式
   const [primaryColor, setPrimaryColor] = useState<string>('blue');
   const [size, setSize] = useState<string>('normal');
   const [borderRadius, setBorderRadius] = useState<string>('default');
@@ -886,7 +886,7 @@ AI模型选择器使用说明文档
 
 ### 1. 基本使用
 ```typescript
-import { AIModelSelect, aiModelSelected } from '../../packages/ai-model-manager';
+import { AIModelSelect, aiModelSelected } from 'ai_model_application_suite';
 
 function App() {
   const [selectedModel, setSelectedModel] = useState(null);
@@ -927,7 +927,7 @@ const allConfigs = aiModelSelected.getConfigs();
 
 ### 3. 高级使用（自定义管理器实例）
 ```typescript
-import { AIModelSelect, createAIModelManager } from '../../packages/ai-model-manager';
+import { AIModelSelect, createAIModelManager } from 'ai_model_application_suite';
 
 function App() {
   // 创建自定义管理器实例

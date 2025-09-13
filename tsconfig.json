@@ -16,8 +16,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
     "outDir": "./dist"
   },
-      "include": ["packages/ai-model-manager", "packages/unified-AI-chat-transceiver"],
+  "include": ["packages/ai_model_application_suite"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

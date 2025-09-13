@@ -1,27 +1,42 @@
 {
-  "name": "ai-model-application-suite",
+  "name": "@ai-model-application-suite/core",
   "version": "1.0.0",
-  "description": "React component package for AI model configuration and selection management",
-  "main": "dist/react-ai-model-manager.umd.js",
-  "module": "dist/react-ai-model-manager.es.js",
+  "description": "AI Model Application Suite - Unified AI model management and chat transceiver",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    },
+    "./styles": "./dist/core.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "tsc && vite build -c vite.lib.config.ts",
+    "build": "tsc && vite build -c vite.lib.config.ts && npx tsc --declaration --emitDeclarationOnly --outDir dist",
     "build:lib": "vite build -c vite.lib.config.ts",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:unified": "cd packages/ai_model_application_suite && npm test",
-    "test:unified:watch": "cd packages/ai_model_application_suite && npm run test:watch",
-    "test:unified:coverage": "cd packages/ai_model_application_suite && npm run test:coverage",
-    "demo": "cd examples/AIModelSelector && npm run dev",
-    "demo:watch": "cd examples/AIModelSelector && npm run dev:watch",
-    "demo:build": "cd examples/AIModelSelector && npm run build"
+    "prepublishOnly": "npm run clean && npm run build",
+    "prepack": "npm run build"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "openai": "^4.28.0",
+    "ts-jest": "^29.4.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.0",
@@ -35,33 +50,34 @@
     "@types/react-dom": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
-    "jest": "^30.1.3",
+    "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
+    "rimraf": "^5.0.0",
     "rollup": "^3.0.0",
     "rollup-plugin-dts": "^6.0.0",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "vite": "^6.3.6"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "keywords": [
     "react",
     "ai",
     "model",
     "configuration",
-    "component"
+    "component",
+    "chat",
+    "transceiver",
+    "unified",
+    "openai",
+    "volcengine"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/adisonshadow/AIModelApplicationSuite.git"
   },
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "ts-jest": "^29.4.1"
-  }
+  "author": "Point Fang",
+  "license": "MIT"
 }

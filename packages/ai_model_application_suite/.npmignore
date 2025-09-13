@@ -1,0 +1,43 @@
+# Source files
+src/
+*.ts
+*.tsx
+!*.d.ts
+
+# Development files
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+vite.lib.config.ts
+jest.config.js
+.eslintrc.*
+
+# Build tools
+node_modules/
+*.log
+yarn.lock
+package-lock.json
+
+# Test files
+test/
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage/
+
+# Development dependencies
+.eslintcache
+.DS_Store
+*.tgz
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git files
+.git/
+.gitignore

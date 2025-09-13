@@ -1,5 +1,5 @@
 import React from 'react';
-import { promptTemplates, PromptTemplateProcessor, type PromptTemplate } from './PromptTemplateConfig';
+import { promptTemplates, PromptTemplateProcessor } from './PromptTemplateConfig';
 
 interface PromptTemplateComponentProps {
   selectedTemplate: string;

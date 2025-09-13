@@ -15,13 +15,13 @@
 ### 安装
 
 ```bash
-npm install unified-AI-chat-transceiver
+npm install ai_model_application_suite
 ```
 
 ### 基本使用
 
 ```typescript
-import { createAIModelSender } from 'unified-AI-chat-transceiver';
+import { createAIModelSender } from 'ai_model_application_suite';
 
 // 创建发送器实例
 const sender = createAIModelSender({
@@ -47,7 +47,7 @@ console.log(response.content);
 ### 1. 创建发送器
 
 ```typescript
-import { createAIModelSender } from 'unified-AI-chat-transceiver';
+import { createAIModelSender } from 'ai_model_application_suite';
 
 // 方式1: 使用配置对象
 const sender = createAIModelSender({

@@ -665,9 +665,9 @@ yarn build
 
 ### Adding New AI Providers
 
-1. Add new provider enum value in `packages/ai-model-manager/types/index.ts`
-2. Add provider metadata configuration in `packages/ai-model-manager/utils/providers.ts`
-3. Add new service provider implementation in `packages/unified-AI-chat-transceiver/src/providers/`
+1. Add new provider enum value in `packages/ai_model_application_suite/src/types/index.ts`
+2. Add provider metadata configuration in `packages/ai_model_application_suite/src/utils/providers.ts`
+3. Add new service provider implementation in `packages/ai_model_application_suite/src/providers/`
 4. Update documentation and type definitions
 
 ## 📄 License

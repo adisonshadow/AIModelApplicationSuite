@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 import { resolve } from 'path'
 
 export default defineConfig({
@@ -10,7 +9,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'packages/ai_model_application_suite/src/index.ts'),
       name: 'ReactAIModelManager',
       formats: ['es', 'umd'],
-      fileName: (format) => `react-ai-model-manager.${format}.js`
+      fileName: (format) => `index.${format}.js`
     },
     rollupOptions: {
       external: ['react', 'react-dom'],
@@ -20,10 +19,7 @@ export default defineConfig({
           'react-dom': 'ReactDOM'
         }
       }
-    }
-  },
-  // 库构建时不启动开发服务器
-  server: {
-    port: 5173
+    },
+    outDir: 'dist'
   }
 })

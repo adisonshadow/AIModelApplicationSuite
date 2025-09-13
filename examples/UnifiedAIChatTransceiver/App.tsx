@@ -5,13 +5,13 @@ import { Flex, Button, Divider, Switch, Badge, type GetProp, type GetRef } from 
 import { LinkOutlined, ApiOutlined, CloudUploadOutlined } from '@ant-design/icons';
 
 // AI消息适配器
-import { createAIModelSender } from '../../packages/unified-AI-chat-transceiver';
-import type { AIModelSender as IAIModelSender } from '../../packages/unified-AI-chat-transceiver';
+import { createAIModelSender } from 'ai_model_application_suite';
+import type { AIModelSender as IAIModelSender } from 'ai_model_application_suite';
 
 // AI模型选择器
-import { AIModelSelect, aiModelSelected } from '../../packages/ai-model-manager';
-import { AIProvider } from '../../packages/ai-model-manager/types';
-import type { AIModelConfig } from '../../packages/ai-model-manager/types';
+import { AIModelSelect, aiModelSelected } from 'ai_model_application_suite';
+import { AIProvider } from 'ai_model_application_suite';
+import type { AIModelConfig } from 'ai_model_application_suite';
 
 // Suggestion 组件
 import { 

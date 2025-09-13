@@ -31,12 +31,12 @@ npm run dev
 ### 1. 基本安装和导入
 
 ```bash
-npm install @ai-model-manager
+npm install ai_model_application_suite
 ```
 
 ```typescript
-import { AIModelSelect, aiModelSelected } from '@ai-model-manager';
-import type { AIModelConfig, AIProvider } from '@ai-model-manager/types';
+import { AIModelSelect, aiModelSelected } from 'ai_model_application_suite';
+import type { AIModelConfig, AIProvider } from 'ai_model_application_suite';
 ```
 
 ### 2. 基本使用示例
@@ -44,7 +44,7 @@ import type { AIModelConfig, AIProvider } from '@ai-model-manager/types';
 #### 简单的下拉选择器
 ```typescript
 import React, { useState } from 'react';
-import { AIModelSelect } from '@ai-model-manager';
+import { AIModelSelect } from 'ai_model_application_suite';
 
 function SimpleExample() {
   const [selectedModelId, setSelectedModelId] = useState<string>('');
@@ -63,7 +63,7 @@ function SimpleExample() {
 #### 列表模式选择器
 ```typescript
 import React, { useState } from 'react';
-import { AIModelSelect } from '@ai-model-manager';
+import { AIModelSelect } from 'ai_model_application_suite';
 
 function ListExample() {
   const [selectedModelId, setSelectedModelId] = useState<string>('');
@@ -86,8 +86,8 @@ function ListExample() {
 #### 基本使用
 ```typescript
 import React, { useState, useEffect } from 'react';
-import { AIModelSelect, aiModelSelected } from '@ai-model-manager';
-import type { AIModelConfig } from '@ai-model-manager/types';
+import { AIModelSelect, aiModelSelected } from 'ai_model_application_suite';
+import type { AIModelConfig } from 'ai_model_application_suite';
 
 function ManagerExample() {
   const [selectedModel, setSelectedModel] = useState<AIModelConfig | null>(null);
@@ -127,7 +127,7 @@ function ManagerExample() {
 #### 主动查询方法
 ```typescript
 import React from 'react';
-import { aiModelSelected } from '@ai-model-manager';
+import { aiModelSelected } from 'ai_model_application_suite';
 
 function QueryExample() {
   const handleQuery = () => {
@@ -158,8 +158,8 @@ function QueryExample() {
 #### 自定义存储方式
 ```typescript
 import React from 'react';
-import { AIModelSelect, createAIModelManager } from '@ai-model-manager';
-import type { StorageConfig } from '@ai-model-manager/types';
+import { AIModelSelect, createAIModelManager } from 'ai_model_application_suite';
+import type { StorageConfig } from 'ai_model_application_suite';
 
 function CustomStorageExample() {
   // 创建自定义管理器实例
@@ -192,8 +192,8 @@ function CustomStorageExample() {
 #### API存储方式
 ```typescript
 import React from 'react';
-import { AIModelSelect, createAIModelManager } from '@ai-model-manager';
-import type { StorageConfig } from '@ai-model-manager/types';
+import { AIModelSelect, createAIModelManager } from 'ai_model_application_suite';
+import type { StorageConfig } from 'ai_model_application_suite';
 
 function APIStorageExample() {
   const apiStorageConfig: StorageConfig = {
@@ -225,8 +225,8 @@ function APIStorageExample() {
 #### 自定义提供商
 ```typescript
 import React from 'react';
-import { AIModelSelect } from '@ai-model-manager';
-import type { AIProviderMeta } from '@ai-model-manager/types';
+import { AIModelSelect } from 'ai_model_application_suite';
+import type { AIProviderMeta } from 'ai_model_application_suite';
 
 function CustomProviderExample() {
   const customProviders: AIProviderMeta[] = [
@@ -271,7 +271,7 @@ function CustomProviderExample() {
 #### 主题模式
 ```typescript
 import React from 'react';
-import { AIModelSelect } from '@ai-model-manager';
+import { AIModelSelect } from 'ai_model_application_suite';
 
 function ThemeExample() {
   return (
@@ -304,7 +304,7 @@ function ThemeExample() {
 #### 自定义样式
 ```typescript
 import React from 'react';
-import { AIModelSelect } from '@ai-model-manager';
+import { AIModelSelect } from 'ai_model_application_suite';
 
 function CustomStyleExample() {
   return (
@@ -331,8 +331,8 @@ function CustomStyleExample() {
 
 ```typescript
 import React, { useState, useEffect } from 'react';
-import { AIModelSelect, aiModelSelected } from '@ai-model-manager';
-import type { AIModelConfig, AIProvider } from '@ai-model-manager/types';
+import { AIModelSelect, aiModelSelected } from 'ai_model_application_suite';
+import type { AIModelConfig, AIProvider } from 'ai_model_application_suite';
 
 function CompleteExample() {
   const [selectedModel, setSelectedModel] = useState<AIModelConfig | null>(null);

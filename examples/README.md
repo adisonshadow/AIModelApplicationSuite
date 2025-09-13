@@ -46,5 +46,5 @@ npm run build
 ## 注意事项
 
 - 这是一个独立的演示应用，有自己的依赖管理
-- 通过 `../../packages/ai-model-manager` 和 `../../packages/unified-AI-chat-transceiver` 路径引用主库的组件和类型
+- 通过 `../../packages/ai_model_application_suite` 路径引用主库的组件和类型
 - 构建输出到 `../../examples-dist` 目录
