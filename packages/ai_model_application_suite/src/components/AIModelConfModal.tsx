@@ -481,9 +481,9 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
       >
         {/* 弹窗头部 */}
         <div className="ai-modal-header">
-          <h3 className="ai-modal-title">
+          <span className="ai-modal-title">
             {isEditing ? '编辑AI模型' : '添加AI模型'}
-          </h3>
+          </span>
           <button className="ai-modal-close" onClick={onClose}>
             ×
           </button>

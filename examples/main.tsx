@@ -5,7 +5,7 @@ import AIModelSelector from './AIModelSelector/App';
 import UnifiedAIChatTransceiver from './UnifiedAIChatTransceiver/App';
 import './index.css';
 // 导入AI组件库的样式
-import 'ai_model_application_suite/styles';
+import '@ai-model-application-suite/core/core.css';
 
 // 导航组件
 const Navigation: React.FC = () => {

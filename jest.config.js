@@ -2,12 +2,15 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
   },
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: 'tsconfig.json',
+      diagnostics: false
+    }],
     '^.+\\.(js|jsx)$': 'babel-jest'
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
@@ -35,7 +38,17 @@ module.exports = {
     {
       displayName: 'unified-suite',
       testMatch: ['<rootDir>/test/ai_model_application_suite/**/*.(test|spec).(ts|tsx)'],
-      setupFilesAfterEnv: ['<rootDir>/test/ai_model_application_suite/setupTests.ts']
+      setupFilesAfterEnv: ['<rootDir>/packages/ai_model_application_suite/src/setupTests.ts'],
+      testEnvironment: 'jsdom',
+      moduleNameMapper: {
+        '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+      },
+      transform: {
+        '^.+\\.(ts|tsx)$': ['ts-jest', {
+          tsconfig: 'tsconfig.json',
+          diagnostics: false
+        }]
+      }
     }
   ]
 };

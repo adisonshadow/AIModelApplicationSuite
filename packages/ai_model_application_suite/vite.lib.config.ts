@@ -19,8 +19,15 @@ export default defineConfig({
           'react-dom': 'ReactDOM',
           'react/jsx-runtime': 'React',
           'react/jsx-dev-runtime': 'React'
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'style.css') {
+            return 'core.css';
+          }
+          return assetInfo.name;
         }
       }
-    }
+    },
+    cssCodeSplit: false
   }
 });

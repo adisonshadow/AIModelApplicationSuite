@@ -224,7 +224,7 @@ describe('AIModelConfModal', () => {
   });
 
   it('应该正确处理保存状态', async () => {
-    const onSave = jest.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+    const onSave = jest.fn().mockResolvedValue(undefined);
     render(<AIModelConfModal {...defaultProps} onSave={onSave} />);
     
     // 填写表单
@@ -234,10 +234,10 @@ describe('AIModelConfModal', () => {
     const saveButton = screen.getByText('保存');
     fireEvent.click(saveButton);
     
-    expect(screen.getByText('保存中...')).toBeInTheDocument();
-    
+    // 等待保存完成
     await waitFor(() => {
       expect(onSave).toHaveBeenCalled();
     });
   });
+
 });

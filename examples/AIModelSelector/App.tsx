@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { AIModelSelect, AIModelManagerComponent, aiModelSelected } from 'ai_model_application_suite';
-import { AIModelConfig, AIProvider, StorageConfig, ThemeMode } from 'ai_model_application_suite';
+import { AIModelSelect, AIModelManagerComponent, aiModelSelected } from '@ai-model-application-suite/core';
+import { AIModelConfig, AIProvider, StorageConfig, ThemeMode } from '@ai-model-application-suite/core';
 
 // 模拟API调用的演示
 const mockAPI = {

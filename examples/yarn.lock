@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@ai-model-application-suite/core@file:../packages/ai_model_application_suite":
+  version "1.0.0"
+  resolved "file:../packages/ai_model_application_suite"
+  dependencies:
+    openai "^4.28.0"
+    ts-jest "^29.4.1"
+
 "@amap/amap-jsapi-loader@^1.0.1":
   version "1.0.1"
   resolved "https://mirrors.huaweicloud.com/repository/npm/@amap/amap-jsapi-loader/-/amap-jsapi-loader-1.0.1.tgz"
@@ -3042,9 +3049,8 @@ ahooks@^3.3.13:
     screenfull "^5.0.0"
     tslib "^2.4.1"
 
-"ai_model_application_suite@file:../packages/ai_model_application_suite/dist":
-  version "1.0.0"
-  resolved "file:../packages/ai_model_application_suite/dist"
+ai_model_application_suite@@/ai_model_application_suite/core:
+  resolved "file:@/ai_model_application_suite/core"
 
 ajv-draft-04@~1.0.0:
   version "1.0.0"

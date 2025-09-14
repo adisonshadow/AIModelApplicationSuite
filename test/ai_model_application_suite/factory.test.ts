@@ -3,11 +3,11 @@ import {
   defaultSenderFactory,
   createAIModelSender,
   isProviderSupported
-} from '../../../packages/ai_model_application_suite/src/factory';
-import { AIModelConfig, AIProvider } from '../../../packages/ai_model_application_suite/src/types';
+} from '@ai-model-application-suite/core/src/factory';
+import { AIModelConfig, AIProvider } from '@ai-model-application-suite/core/src/types';
 
 // Mock VolcengineAISender
-jest.mock('../../../packages/ai_model_application_suite/src/providers/volcengine', () => ({
+jest.mock('@ai-model-application-suite/core/src/providers/volcengine', () => ({
   VolcengineAISender: jest.fn().mockImplementation(() => ({
     sendChatMessage: jest.fn(),
     sendChatMessageStream: jest.fn(),

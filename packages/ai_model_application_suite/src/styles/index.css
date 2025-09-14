@@ -216,10 +216,12 @@
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px;
   border-radius: var(--border-radius);
   font-size: 20px;
-  line-height: 1;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
   transition: var(--transition);
 }
 
@@ -480,7 +482,7 @@
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
   .ai-model-manager.auto-theme {
-    --primary-color: #60a5fa;
+    /* --primary-color: #60a5fa;
     --primary-hover: #3b82f6;
     --secondary-color: #94a3b8;
     --success-color: #34d399;
@@ -488,6 +490,19 @@
     --warning-color: #fbbf24;
     --border-color: #374151;
     --bg-color: #1f2937;
+    --bg-secondary: #111827;
+    --text-color: #f9fafb;
+    --text-secondary: #9ca3af; */
+
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-light: rgba(96, 165, 250, .1);
+    --secondary-color: #94a3b8;
+    --success-color: #34d399;
+    --danger-color: #f87171;
+    --warning-color: #fbbf24;
+    --border-color: #363636;
+    --bg-color: #3c3c3c17;
     --bg-secondary: #111827;
     --text-color: #f9fafb;
     --text-secondary: #9ca3af;
@@ -861,16 +876,15 @@
 
 /* 暗色主题 */
 .ai-model-manager.theme-dark {
-  --primary-color: #60a5fa;
+  --primary-color: #2084ff;
   --primary-hover: #3b82f6;
-  --primary-light: rgba(96, 165, 250, 0.1);
+  --primary-light: rgba(177, 212, 255, 0.1);
   --secondary-color: #94a3b8;
-  --success-color: #34d399;
-  --danger-color: #f87171;
-  --warning-color: #fbbf24;
-  /* 保持边框颜色不变，不使用主色调 */
-  --border-color: #374151;
-  --bg-color: #1f2937;
+  --success-color: #4cc60f;
+  --danger-color: #fc3c3f;
+  --warning-color: #faad14;
+  --border-color: #363636;
+  --bg-color: #3c3c3c17;
   --bg-secondary: #111827;
   --text-color: #f9fafb;
   --text-secondary: #9ca3af;

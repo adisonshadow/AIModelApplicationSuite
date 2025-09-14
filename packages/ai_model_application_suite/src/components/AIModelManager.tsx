@@ -209,9 +209,9 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
       >
         {/* 弹窗头部 */}
         <div className="ai-modal-header">
-          <h3 className="ai-modal-title">
+          <span className="ai-modal-title">
             AI模型配置管理
-          </h3>
+          </span>
           <button className="ai-modal-close" onClick={onClose}>
             ×
           </button>
