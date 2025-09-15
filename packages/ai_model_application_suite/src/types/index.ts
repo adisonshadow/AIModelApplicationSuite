@@ -102,6 +102,8 @@ export interface AIModelSelectProps {
   allowDelete?: boolean;
   // 下拉模式的占位符文本
   placeholder?: string;
+  // 自定义格式化显示 label 的函数
+  formatLabel?: (config: AIModelConfig) => string;
   // AI模型选择器实例
   manager?: any;
 }

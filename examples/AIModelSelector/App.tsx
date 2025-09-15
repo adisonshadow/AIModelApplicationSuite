@@ -1,6 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { AIModelSelect, AIModelManagerComponent, aiModelSelected } from '@ai-model-application-suite/core';
 import { AIModelConfig, AIProvider, StorageConfig, ThemeMode } from '@ai-model-application-suite/core';
+import { Link } from 'react-router-dom';
+
+// 导入AI组件库的样式
+// import '@ai-model-application-suite/core/core.css';
 
 // 模拟API调用的演示
 const mockAPI = {
@@ -347,7 +351,7 @@ const DemoApp: React.FC = () => {
       }
       
       .ai-model-manager.gradient-bg .ai-model-item.selected {
-        background: linear-gradient(135deg, ${styles.primaryLight}, #f8fafc) !important;
+        background: linear-gradient(135deg, ${styles.primaryLight},rgba(248, 250, 252, 0.23)) !important;
       }
     `;
     
@@ -375,7 +379,14 @@ const DemoApp: React.FC = () => {
       </h1>
       <p style={{ color: '#64748b', marginBottom: '32px' }}>
         这是一个用于AI模型配置和选择的React组件包演示页面
+        <Link 
+              to="/unbuild-selector" 
+            >
+              <span className="nav-icon">🔧</span>
+              未编译版本选择器
+          </Link>
       </p>
+
 
       {/* 配置选项 */}
       <div style={{ 
@@ -741,7 +752,7 @@ const DemoApp: React.FC = () => {
 
       {/* 暗色主题演示区域 */}
       <div style={{ 
-        background: '#1f2937', 
+        background: 'rgb(27, 27, 27)', 
         color: '#f9fafb',
         padding: '20px', 
         borderRadius: '8px', 
@@ -813,7 +824,7 @@ const DemoApp: React.FC = () => {
 
         </div>
         
-        <div style={{ marginTop: '16px', padding: '12px', background: '#111827', borderRadius: '6px', fontSize: '13px' }}>
+        <div style={{ marginTop: '16px', padding: '12px', background: 'rgb(27, 27, 27)', borderRadius: '6px', fontSize: '13px' }}>
           <p style={{ margin: '0 0 8px 0', color: '#9ca3af' }}>
             <strong>✨ 暗色主题特性：</strong>
           </p>

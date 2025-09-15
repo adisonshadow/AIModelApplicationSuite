@@ -3,7 +3,7 @@
 
 
 "@ai-model-application-suite/core@file:../packages/ai_model_application_suite":
-  version "1.0.0"
+  version "0.0.2"
   resolved "file:../packages/ai_model_application_suite"
   dependencies:
     openai "^4.28.0"

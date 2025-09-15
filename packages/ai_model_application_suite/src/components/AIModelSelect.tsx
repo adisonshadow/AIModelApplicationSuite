@@ -28,6 +28,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   addButtonText = '添加AI模型',
   allowDelete = true,
   placeholder = '请选择AI模型',
+  formatLabel,
   manager
 }) => {
   // 状态管理
@@ -269,7 +270,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             </option>
             {enabledConfigs.map((config) => (
               <option key={config.id} value={config.id}>
-                {config.name} ({getProviderDisplayName(config.provider)})
+                {formatLabel ? formatLabel(config) : `${config.name} (${getProviderDisplayName(config.provider)})`}
               </option>
             ))}
             {/* 添加模型选项 */}
@@ -288,6 +289,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             onSave={handleSaveModel}
             onShowManager={handleShowManager}
             supportedProviders={getSupportedProviders()}
+            theme={theme}
             customClassName={customClassName}
           />
         )}
@@ -300,6 +302,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             storage={storage}
             supportedProviders={supportedProviders}
             customProviders={customProviders}
+            theme={theme}
           />
         )}
       </div>
@@ -417,6 +420,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             onSave={handleSaveModel}
             onShowManager={handleShowManager}
             supportedProviders={getSupportedProviders()}
+            theme={theme}
             customClassName={customClassName}
           />
         )}
@@ -429,6 +433,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             storage={storage}
             supportedProviders={supportedProviders}
             customProviders={customProviders}
+            theme={theme}
           />
         )}
       </div>

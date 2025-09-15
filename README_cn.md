@@ -96,6 +96,30 @@ function App() {
 }
 ```
 
+### AI模型选择器 - 自定义选项格式
+
+```tsx
+import React, { useState } from 'react';
+import { AIModelSelect, AIProvider } from 'react-ai-model-manager';
+
+function App() {
+  const [selectedModelId, setSelectedModelId] = useState<string>('');
+  
+  return (
+    <AIModelSelect
+      selectedModelId={selectedModelId}
+      onModelChange={setSelectedModelId}
+      supportedProviders={[
+        AIProvider.OPENAI,
+        AIProvider.DEEPSEEK,
+        AIProvider.ANTHROPIC
+      ]}
+      formatLabel={(config) => config.name} // 只显示配置名称
+    />
+  );
+}
+```
+
 ### AI模型选择器 - 使用统一管理器
 
 ```tsx
@@ -442,6 +466,7 @@ const sender = createAIModelSender({
 | `addButtonText` | `string` | `'添加AI模型'` | 添加按钮文本 |
 | `allowDelete` | `boolean` | `true` | 是否允许删除 |
 | `placeholder` | `string` | `'请选择AI模型'` | 占位符文本 |
+| `formatLabel` | `(config: AIModelConfig) => string` | `undefined` | 自定义选项显示格式 |
 | `manager` | `AIModelManager` | `undefined` | 管理器实例 |
 
 #### aiModelSelected 方法

@@ -95,6 +95,30 @@ function App() {
 }
 ```
 
+### AI Model Selector - Custom Option Format
+
+```tsx
+import React, { useState } from 'react';
+import { AIModelSelect, AIProvider } from 'react-ai-model-manager';
+
+function App() {
+  const [selectedModelId, setSelectedModelId] = useState<string>('');
+  
+  return (
+    <AIModelSelect
+      selectedModelId={selectedModelId}
+      onModelChange={setSelectedModelId}
+      supportedProviders={[
+        AIProvider.OPENAI,
+        AIProvider.DEEPSEEK,
+        AIProvider.ANTHROPIC
+      ]}
+      formatLabel={(config) => config.name} // Show only config name
+    />
+  );
+}
+```
+
 ### AI Model Selector - Using Unified Manager
 
 ```tsx
@@ -440,6 +464,7 @@ const sender = createAIModelSender({
 | `addButtonText` | `string` | `'Add AI Model'` | Add button text |
 | `allowDelete` | `boolean` | `true` | Whether to allow deletion |
 | `placeholder` | `string` | `'Please select AI model'` | Placeholder text |
+| `formatLabel` | `(config: AIModelConfig) => string` | `undefined` | Custom option display format |
 | `manager` | `AIModelManager` | `undefined` | Manager instance |
 
 #### aiModelSelected Methods

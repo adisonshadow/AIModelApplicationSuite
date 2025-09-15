@@ -136,7 +136,8 @@
   gap: 8px;
   padding: 12px 16px;
   background: var(--bg-secondary);
-  border: 1px dashed var(--border-color);
+  /* border: 1px dashed var(--border-color); */
+  border: none;
   color: var(--text-secondary);
   cursor: pointer;
   transition: var(--transition);
@@ -232,7 +233,7 @@
 
 /* 弹窗内容 */
 .ai-modal-body {
-  padding: 20px;
+  padding: 20px 40px;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
@@ -482,18 +483,6 @@
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
   .ai-model-manager.auto-theme {
-    /* --primary-color: #60a5fa;
-    --primary-hover: #3b82f6;
-    --secondary-color: #94a3b8;
-    --success-color: #34d399;
-    --danger-color: #f87171;
-    --warning-color: #fbbf24;
-    --border-color: #374151;
-    --bg-color: #1f2937;
-    --bg-secondary: #111827;
-    --text-color: #f9fafb;
-    --text-secondary: #9ca3af; */
-
     --primary-color: #60a5fa;
     --primary-hover: #3b82f6;
     --primary-light: rgba(96, 165, 250, .1);
@@ -502,8 +491,8 @@
     --danger-color: #f87171;
     --warning-color: #fbbf24;
     --border-color: #363636;
-    --bg-color: #3c3c3c17;
-    --bg-secondary: #111827;
+    --bg-color: #252629;
+    --bg-secondary: #1e1f23;
     --text-color: #f9fafb;
     --text-secondary: #9ca3af;
   }
@@ -539,11 +528,6 @@
   font-size: 14px;
   cursor: pointer;
   transition: var(--transition);
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
   padding-right: 36px;
   min-width: 200px;
   width: auto;
@@ -608,68 +592,7 @@
   }
 }
 
-/* 主题样式扩展 */
-
-/* 蓝色主色调 */
-.ai-model-manager.color-blue {
-  --primary-color: #3b82f6;
-  --primary-hover: #2563eb;
-  --primary-light: rgba(59, 130, 246, 0.1);
-  --primary-glow: rgba(59, 130, 246, 0.3);
-  --secondary-color: #64748b;
-  --success-color: #10b981;
-  /* 保持边框颜色不变，不使用主色调 */
-  --border-color: #e2e8f0;
-  --bg-secondary: #f1f5f9;
-}
-
-/* 紫色主色调 */
-.ai-model-manager.color-purple {
-  --primary-color: #8b5cf6;
-  --primary-hover: #7c3aed;
-  --primary-light: rgba(139, 92, 246, 0.1);
-  --secondary-color: #6b7280;
-  --success-color: #10b981;
-  /* 保持边框颜色不变，不使用主色调 */
-  --border-color: #e2e8f0;
-  --bg-secondary: #f3f4f6;
-}
-
-/* 绿色主色调 */
-.ai-model-manager.color-green {
-  --primary-color: #10b981;
-  --primary-hover: #059669;
-  --primary-light: rgba(16, 185, 129, 0.1);
-  --secondary-color: #6b7280;
-  --success-color: #22c55e;
-  /* 保持边框颜色不变，不使用主色调 */
-  --border-color: #e2e8f0;
-  --bg-secondary: #f0fdf4;
-}
-
-/* 橙色主色调 */
-.ai-model-manager.color-orange {
-  --primary-color: #f59e0b;
-  --primary-hover: #d97706;
-  --primary-light: rgba(245, 158, 11, 0.1);
-  --secondary-color: #6b7280;
-  --success-color: #10b981;
-  /* 保持边框颜色不变，不使用主色调 */
-  --border-color: #e2e8f0;
-  --bg-secondary: #fffbeb;
-}
-
-/* 红色主色调 */
-.ai-model-manager.color-red {
-  --primary-color: #ef4444;
-  --primary-hover: #dc2626;
-  --primary-light: rgba(239, 68, 68, 0.1);
-  --secondary-color: #6b7280;
-  --success-color: #10b981;
-  /* 保持边框颜色不变，不使用主色调 */
-  --border-color: #e2e8f0;
-  --bg-secondary: #fef2f2;
-}
+/* 主题样式扩展 - 移除颜色主题，只保留基础样式 */
 
 /* 紧凑模式 */
 .ai-model-manager.size-compact {
@@ -761,7 +684,7 @@
 }
 
 .ai-model-manager.gradient-bg .ai-model-item.selected {
-  background: linear-gradient(135deg, var(--primary-light), var(--bg-secondary));
+  background: linear-gradient(135deg, var(--primary-light), color-mix(in srgb, var(--bg-secondary) 50%, transparent));
 }
 
 /* 动画效果 */
@@ -857,12 +780,21 @@
   max-width: 100%;
 }
 
-/* 主题样式 */
+.ai-model-manager select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+/* 基础主题样式 - 只保留 light 和 dark */
 /* 亮色主题 */
 .ai-model-manager.theme-light {
-  --primary-color: #3b82f6;
+  --primary-color: #2084ff;
   --primary-hover: #2563eb;
   --primary-light: rgba(59, 130, 246, 0.1);
+  --primary-glow: rgba(59, 130, 246, 0.3);
   --secondary-color: #64748b;
   --success-color: #10b981;
   --danger-color: #ef4444;
@@ -872,83 +804,32 @@
   --bg-secondary: #f8fafc;
   --text-color: #1e293b;
   --text-secondary: #64748b;
+}
+
+.ai-model-manager.theme-light select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 /* 暗色主题 */
 .ai-model-manager.theme-dark {
   --primary-color: #2084ff;
-  --primary-hover: #3b82f6;
-  --primary-light: rgba(177, 212, 255, 0.1);
+  --primary-hover: #4196ff;
+  --primary-light: rgba(96, 165, 250, 0.1);
+  --primary-glow: rgba(96, 165, 250, 0.3);
   --secondary-color: #94a3b8;
-  --success-color: #4cc60f;
-  --danger-color: #fc3c3f;
-  --warning-color: #faad14;
+  --success-color: #34d399;
+  --danger-color: #f87171;
+  --warning-color: #fbbf24;
   --border-color: #363636;
-  --bg-color: #3c3c3c17;
-  --bg-secondary: #111827;
+  --bg-color: #252629;
+  --bg-secondary: #1e1f23;
   --text-color: #f9fafb;
   --text-secondary: #9ca3af;
 }
 
 /* 暗色主题下拉箭头样式 */
-.ai-model-manager.theme-dark .ai-select {
+.ai-model-manager.theme-dark select {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-}
-
-/* 系统主题（根据系统偏好自动切换） */
-.ai-model-manager.theme-system {
-  /* 默认使用亮色主题变量 */
-  --primary-color: #3b82f6;
-  --primary-hover: #2563eb;
-  --primary-light: rgba(59, 130, 246, 0.1);
-  --secondary-color: #64748b;
-  --success-color: #10b981;
-  --danger-color: #ef4444;
-  --warning-color: #f59e0b;
-  /* 保持边框颜色不变，不使用主色调 */
-  --border-color: #e2e8f0;
-  --bg-color: #ffffff;
-  --bg-secondary: #f8fafc;
-  --text-color: #1e293b;
-  --text-secondary: #64748b;
-}
-
-/* 系统偏好暗色模式时的样式 */
-@media (prefers-color-scheme: dark) {
-  .ai-model-manager.theme-system {
-    --primary-color: #60a5fa;
-    --primary-hover: #3b82f6;
-    --primary-light: rgba(96, 165, 250, 0.1);
-    --secondary-color: #94a3b8;
-    --success-color: #34d399;
-    --danger-color: #f87171;
-    --warning-color: #fbbf24;
-    /* 保持边框颜色不变，不使用主色调 */
-    --border-color: #374151;
-    --bg-color: #1f2937;
-    --bg-secondary: #111827;
-    --text-color: #f9fafb;
-    --text-secondary: #9ca3af;
-  }
-  
-  /* 系统暗色模式下的下拉箭头 */
-  .ai-model-manager.theme-system .ai-select {
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-  }
-}
-
-/* 主色调补充变量 */
-.ai-model-manager.color-blue { --primary-glow: rgba(59, 130, 246, 0.3); }
-.ai-model-manager.color-purple { --primary-glow: rgba(139, 92, 246, 0.3); }
-.ai-model-manager.color-green { --primary-glow: rgba(16, 185, 129, 0.3); }
-.ai-model-manager.color-orange { --primary-glow: rgba(245, 158, 11, 0.3); }
-.ai-model-manager.color-red { --primary-glow: rgba(239, 68, 68, 0.3); }
-.ai-model-manager.theme-light { --primary-glow: rgba(59, 130, 246, 0.3); }
-.ai-model-manager.theme-dark { --primary-glow: rgba(96, 165, 250, 0.3); }
-.ai-model-manager.theme-system { --primary-glow: rgba(59, 130, 246, 0.3); }
-
-@media (prefers-color-scheme: dark) {
-  .ai-model-manager.theme-system { --primary-glow: rgba(96, 165, 250, 0.3); }
 }
 
 /* JSON参数字段样式 */

@@ -2,10 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import AIModelSelector from './AIModelSelector/App';
+import UnbuildSelector from './UnbuildSelector/App';
 import UnifiedAIChatTransceiver from './UnifiedAIChatTransceiver/App';
 import './index.css';
-// 导入AI组件库的样式
-import '@ai-model-application-suite/core/core.css';
 
 // 导航组件
 const Navigation: React.FC = () => {
@@ -51,6 +50,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Navigate to="/aimodel-selector" replace />} />
             <Route path="/aimodel-selector" element={<AIModelSelector />} />
+            <Route path="/unbuild-selector" element={<UnbuildSelector />} />
             <Route path="/unified_ai_chat_transceiver" element={<UnifiedAIChatTransceiver />} />
           </Routes>
         </main>
