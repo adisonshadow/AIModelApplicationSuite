@@ -5,14 +5,9 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   root: path.resolve(__dirname, '.'),
-  optimizeDeps: {
-    exclude: ['ai_model_application_suite']
-  },
-  build: {
-    outDir: '../../examples-dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      external: ['ai_model_application_suite']
+  resolve: {
+    alias: {
+      'ai-model-application-suite': path.resolve(__dirname, '../packages/ai_model_application_suite/dist/index.es.js')
     }
   },
   server: {

@@ -26,7 +26,8 @@ export type {
   ChatResponse,
   ChatStreamResponse,
   CompletionResponse,
-  CompletionStreamResponse
+  CompletionStreamResponse,
+  AutoContinueState
 } from './types';
 
 // 导出工具函数
@@ -37,13 +38,45 @@ export {
 } from './utils/storage';
 
 export {
+  AutoContinueManager
+} from './utils/AutoContinueManager';
+
+export {
   DEFAULT_PROVIDERS,
   getProviderMeta,
   getAllProviders,
   validateProviderConfig
 } from './utils/providers';
 
-// 导出管理器
+// 导出新的全局管理器（推荐）
+export {
+  GlobalAIModelManager,
+  getGlobalAIModelManager,
+  globalAIModelManager
+} from './utils/GlobalAIModelManager';
+
+// 导出AI事件管理器
+export {
+  AIEventManager,
+  getAIEventManager,
+  aiEventManager
+} from './utils/AIEventManager';
+
+// 导出React Hooks
+export {
+  useAIModel,
+  useCurrentAIModel,
+  useAIModelConfigs
+} from './hooks/useAIModel';
+
+export {
+  useAIEvents,
+  useConversation,
+  useStreaming
+} from './hooks/useAIEvents';
+
+// 导出管理器（弃用）
+/** @deprecated 请使用 GlobalAIModelManager 替代，将在 v1.0.0 中移除 */
 export {
   AIModelManager,
   createAIModelManager
@@ -63,11 +96,12 @@ export { VolcengineAISender } from './providers/volcengine';
 // 导出样式（可选）
 import './styles/index.css';
 
-// 创建默认的管理器实例
+// 创建默认的管理器实例（弃用）
+/** @deprecated 请使用 globalAIModelManager 替代，将在 v1.0.0 中移除 */
 import { createAIModelManager } from './utils/manager';
 export const aiModelSelected = createAIModelManager({
   type: 'localStorage',
-  localStorageKey: 'demo-local-configs'
+  localStorageKey: 'ai-model-configss'
 });
 
 // 默认导出工厂实例

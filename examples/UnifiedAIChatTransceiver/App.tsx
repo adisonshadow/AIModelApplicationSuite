@@ -5,13 +5,12 @@ import { Flex, Button, Divider, Switch, Badge, type GetProp, type GetRef } from 
 import { LinkOutlined, ApiOutlined, CloudUploadOutlined } from '@ant-design/icons';
 
 // AI消息适配器
-import { createAIModelSender } from '@ai-model-application-suite/core';
-import type { AIModelSender as IAIModelSender } from '@ai-model-application-suite/core';
+import { createAIModelSender } from 'ai-model-application-suite';
+import type { AIModelSender as IAIModelSender } from 'ai-model-application-suite';
 
 // AI模型选择器
-import { AIModelSelect, aiModelSelected } from '@ai-model-application-suite/core';
-import { AIProvider } from '@ai-model-application-suite/core';
-import type { AIModelConfig } from '@ai-model-application-suite/core';
+import { AIModelSelect, AIProvider, aiModelSelected } from 'ai-model-application-suite';
+import type { AIModelConfig } from 'ai-model-application-suite';
 
 // Suggestion 组件
 import { 
@@ -103,7 +102,7 @@ const AIModelSender: React.FC = () => {
   // 存储配置
   const storageConfig = useMemo(() => ({
     type: 'localStorage' as const,
-    localStorageKey: 'demo-local-configs'
+    localStorageKey: 'ai-model-configss'
   }), []);
   
   // 聊天相关状态
@@ -708,7 +707,7 @@ const AIModelSender: React.FC = () => {
                         sendChatMessage();
                       }}
                       placeholder="输入你的消息... 输入 / 获取建议... (Shift+Enter换行，Enter发送)"
-                      disabled={isLoading}
+                      // disabled={isLoading}
                       // submitType="enter"
                       // onKeyDown={handleKeyPress}
                       autoSize={{ minRows: 2, maxRows: 6 }}

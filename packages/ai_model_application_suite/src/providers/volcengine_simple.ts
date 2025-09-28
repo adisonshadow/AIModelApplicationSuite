@@ -16,89 +16,6 @@ export class VolcengineAISender implements AIModelSender {
     });
   }
 
-  // 智能内容去重和匹配函数
-  private smartContentMerge(existingContent: string, newContent: string): string {
-    // 获取上次回答的末尾一段文字（更多字符用于匹配）
-    const lastSegment = existingContent.slice(-200).trim();
-    
-    if (lastSegment.length < 10) {
-      // 如果末尾内容太短，直接追加
-      return existingContent + newContent;
-    }
-    
-    console.log('🔍 开始智能匹配:', {
-      lastSegmentPreview: lastSegment.slice(-100),
-      newContentPreview: newContent.slice(0, 100),
-      lastSegmentLength: lastSegment.length,
-      newContentLength: newContent.length
-    });
-    
-    // 尝试多种匹配策略
-    const strategies = [
-      // 策略1：直接字符串匹配
-      (existing: string, newContent: string) => {
-        const matchIndex = newContent.indexOf(existing);
-        if (matchIndex !== -1) {
-          return newContent.substring(matchIndex + existing.length);
-        }
-        return null;
-      },
-      
-      // 策略2：标准化空格后匹配
-      (existing: string, newContent: string) => {
-        const normalizedExisting = existing.replace(/\s+/g, ' ').trim();
-        const normalizedNew = newContent.replace(/\s+/g, ' ').trim();
-        const matchIndex = normalizedNew.indexOf(normalizedExisting);
-        if (matchIndex !== -1) {
-          return newContent.substring(matchIndex + normalizedExisting.length);
-        }
-        return null;
-      },
-      
-      // 策略3：从末尾开始逐步减少匹配
-      (existing: string, newContent: string) => {
-        for (let i = Math.min(existing.length, 150); i >= 10; i -= 10) {
-          const segment = existing.slice(-i);
-          const matchIndex = newContent.indexOf(segment);
-          if (matchIndex !== -1 && matchIndex < 50) { // 只在开头附近匹配
-            return newContent.substring(matchIndex + segment.length);
-          }
-        }
-        return null;
-      },
-      
-      // 策略4：查找HTML标签边界
-      (existing: string, newContent: string) => {
-        // 查找HTML标签边界
-        const tagMatch = existing.match(/<[^>]*$/);
-        if (tagMatch) {
-          const tagStart = tagMatch[0];
-          const matchIndex = newContent.indexOf(tagStart);
-          if (matchIndex !== -1) {
-            return newContent.substring(matchIndex + tagStart.length);
-          }
-        }
-        return null;
-      }
-    ];
-    
-    // 尝试各种匹配策略
-    for (let i = 0; i < strategies.length; i++) {
-      const result = strategies[i](lastSegment, newContent);
-      if (result !== null && result.length > 0) {
-        console.log(`✅ 策略${i + 1}匹配成功:`, {
-          strategy: i + 1,
-          resultPreview: result.slice(0, 50)
-        });
-        return existingContent + result;
-      }
-    }
-    
-    // 完全没有匹配，直接追加
-    console.log('⚠️ 所有策略都未找到匹配，直接追加新内容');
-    return existingContent + newContent;
-  }
-
   async sendChatMessage(messages: ChatMessage[], options?: SendOptions): Promise<ChatResponse> {
     try {
       let extraParams: any = {};
@@ -121,9 +38,6 @@ export class VolcengineAISender implements AIModelSender {
         top_p: options?.topP || extraParams.top_p || 1,
         frequency_penalty: options?.frequencyPenalty || extraParams.frequency_penalty || 0,
         presence_penalty: options?.presencePenalty || extraParams.presence_penalty || 0,
-        metadata: {
-          session_id: `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        },
         ...extraParams
       });
 
@@ -165,25 +79,9 @@ export class VolcengineAISender implements AIModelSender {
     let accumulatedContent = '';
     let currentMessages = [...messages];
     let attemptCount = 0;
-    let responseId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`; // 生成默认会话ID
+    let responseId = '';
     let model = options?.model || this.config.config?.model || 'deepseek-v3-1-250821';
     let created = Math.floor(Date.now() / 1000);
-    
-    // 检查是否是手动继续（通过消息内容判断）
-    const isManualContinue = messages.length > 0 && 
-      messages[messages.length - 1]?.content?.includes('请继续完成上述回答，从上次中断的地方继续。');
-    
-    if (isManualContinue) {
-      // 手动继续时，从倒数第二个消息（assistant消息）中获取已有的累积内容
-      const assistantMessage = messages[messages.length - 2];
-      if (assistantMessage && assistantMessage.role === 'assistant') {
-        accumulatedContent = assistantMessage.content;
-        console.log('🔄 检测到手动继续，已有累积内容长度:', accumulatedContent.length);
-      }
-      
-      // 手动继续时保持原有的会话ID
-      console.log('🔄 手动继续，保持会话ID:', responseId);
-    }
 
     try {
       while (true) {
@@ -200,13 +98,6 @@ export class VolcengineAISender implements AIModelSender {
           }
         }
 
-        // 控制台输出请求的metadata
-        console.log('📤 发送流式请求，metadata:', {
-          session_id: responseId,
-          attemptCount,
-          isManualContinue
-        });
-
         const response = await this.client.chat.completions.create({
           model: model,
           messages: currentMessages.map(msg => ({
@@ -219,9 +110,6 @@ export class VolcengineAISender implements AIModelSender {
           frequency_penalty: options?.frequencyPenalty || extraParams.frequency_penalty || 0,
           presence_penalty: options?.presencePenalty || extraParams.presence_penalty || 0,
           stream: true,
-          metadata: {
-            session_id: responseId
-          },
           ...extraParams
         });
 
@@ -236,19 +124,7 @@ export class VolcengineAISender implements AIModelSender {
             chunk.choices.forEach((choice: any) => {
               if (choice.delta && choice.delta.content) {
                 currentSegmentContent += choice.delta.content;
-                
-                // 直接累积内容，智能合并在流式结束时进行
                 accumulatedContent += choice.delta.content;
-                
-                // 控制台输出：每次接收到的流式内容
-                // console.log('📡 接收流式内容:', {
-                //   timestamp: new Date().toISOString(),
-                //   chunkId: chunk.id,
-                //   deltaContent: choice.delta.content,
-                //   currentSegmentLength: currentSegmentContent.length,
-                //   accumulatedLength: accumulatedContent.length,
-                //   finishReason: choice.finish_reason || 'streaming'
-                // });
                 
                 // 实时调用 onUpdate 回调，传递累积内容
                 if (onUpdate) {
@@ -269,36 +145,14 @@ export class VolcengineAISender implements AIModelSender {
               }
               if (choice.finish_reason) {
                 finishReason = choice.finish_reason;
-                
-                // 控制台输出：流式完成
-                console.log('🏁 流式段落完成:', {
-                  timestamp: new Date().toISOString(),
-                  finishReason: finishReason,
-                  currentSegmentLength: currentSegmentContent.length,
-                  accumulatedLength: accumulatedContent.length,
-                  attemptCount: attemptCount
-                });
               }
             });
           }
         }
 
         console.log(`🏁 第 ${attemptCount} 次请求完成，原因: ${finishReason}`);
-        // console.log(`📝 当前段内容长度: ${currentSegmentContent.length}`);
-        // console.log(`📝 累积内容长度: ${accumulatedContent.length}`);
-        
-        // 如果是手动继续，进行智能内容合并
-        if (isManualContinue && attemptCount === 1) {
-          const originalContent = messages[messages.length - 2]?.content || '';
-          const mergedContent = this.smartContentMerge(originalContent, accumulatedContent);
-          console.log('🔍 智能合并结果:', {
-            originalLength: originalContent.length,
-            newContentLength: accumulatedContent.length,
-            mergedLength: mergedContent.length,
-            isMerged: mergedContent !== (originalContent + accumulatedContent)
-          });
-          accumulatedContent = mergedContent;
-        }
+        console.log(`📝 当前段内容长度: ${currentSegmentContent.length}`);
+        console.log(`📝 累积内容长度: ${accumulatedContent.length}`);
 
         // 检查是否需要继续
         if (finishReason === 'stop') {
@@ -309,50 +163,16 @@ export class VolcengineAISender implements AIModelSender {
         if (finishReason === 'length' && autoContinueEnabled && attemptCount < maxAutoContinue) {
           console.log(`🔄 检测到长度限制，准备继续 (${attemptCount}/${maxAutoContinue})`);
           
-          // 生成继续消息，包含完整的上下文信息
-          const lastContent = accumulatedContent.slice(-200); // 获取最后200个字符作为上下文
+          // 生成继续消息
           const continueMessage: ChatMessage = {
             role: 'user',
-            content: `请继续完成上述回答，从上次中断的地方继续。这是同一个会话的继续，不是新的回答。
-
-上次回答结束在: ${lastContent}
-
-请从上述内容之后继续，不要重复之前的内容。如果是在输出代码中，请不要输出代码块标识头（比如\`\`\`html），直接输出代码。`
+            content: `刚才结束在 "${accumulatedContent.slice(-50)}"，请在此段文字之后继续。`
           };
           
-          // 只使用原始消息 + 继续请求
           currentMessages = [...currentMessages, continueMessage];
-          console.log('📤 发送继续请求，包含AI已回答内容:', {
-            assistantContentLength: accumulatedContent.length,
-            continueMessage: continueMessage.content
-          });
+          console.log('📤 发送继续请求:', continueMessage.content);
         } else {
           console.log('❌ 无法继续:', { finishReason, autoContinueEnabled, attemptCount, maxAutoContinue });
-          
-          // 如果是长度限制，无论是否启用自动继续，都标记为需要手动继续
-          if (finishReason === 'length') {
-            console.log('🔄 标记为需要手动继续');
-            // 在响应中标记需要手动继续
-            return {
-              id: responseId,
-              model: model,
-              choices: [{
-                index: 0,
-                delta: {
-                  role: 'assistant',
-                  content: accumulatedContent
-                },
-                finishReason: 'length' // 保持 length 状态
-              }],
-              created: created,
-              needsManualContinue: true,
-              continueContext: {
-                currentMessages,
-                accumulatedContent,
-                attemptCount
-              }
-            };
-          }
           break;
         }
       }

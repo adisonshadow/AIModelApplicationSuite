@@ -14,7 +14,7 @@
 ## 安装
 
 ```bash
-npm install @ai-model-application-suite/core
+npm install ai-model-application-suite
 ```
 
 ## 快速开始
@@ -23,7 +23,7 @@ npm install @ai-model-application-suite/core
 
 ```tsx
 import React from 'react';
-import { AIModelSelect, createAIModelManager, createAIModelSender } from '@ai-model-application-suite/core';
+import { AIModelSelect, createAIModelManager, createAIModelSender } from 'ai-model-application-suite';
 
 function App() {
   return (
@@ -42,7 +42,7 @@ function App() {
 ### 使用管理器
 
 ```tsx
-import { createAIModelManager, AIProvider } from '@ai-model-application-suite/core';
+import { createAIModelManager, AIProvider } from 'ai-model-application-suite';
 
 // 创建管理器
 const manager = createAIModelManager({
@@ -77,7 +77,7 @@ console.log('当前选中的模型:', selectedModel);
 ### 使用聊天收发器
 
 ```tsx
-import { createAIModelSender, AIProvider } from '@ai-model-application-suite/core';
+import { createAIModelSender, AIProvider } from 'ai-model-application-suite';
 
 // 创建发送器
 const sender = createAIModelSender({

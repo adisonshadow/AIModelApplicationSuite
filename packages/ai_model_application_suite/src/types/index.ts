@@ -190,9 +190,17 @@ export interface AIModelManagerState {
 // AI 模型发送器接口
 export interface AIModelSender {
   sendChatMessage(messages: ChatMessage[], options?: SendOptions): Promise<ChatResponse>;
-  sendChatMessageStream(messages: ChatMessage[], options?: SendOptions): Promise<any>;
+  sendChatMessageStream(messages: ChatMessage[], options?: SendOptions, onUpdate?: (chunk: any) => void): Promise<ChatStreamResponse>;
   sendCompletion(prompt: string, options?: SendOptions): Promise<CompletionResponse>;
   sendCompletionStream(prompt: string, options?: SendOptions): Promise<CompletionStreamResponse>;
+}
+
+// 弃用标记 - 将在 v1.0.0 中移除
+export interface DeprecatedAIModelSender {
+  /** @deprecated 请使用 sendChatMessage 替代 */
+  sendMessage(messages: ChatMessage[], options?: SendOptions): Promise<ChatResponse>;
+  /** @deprecated 请使用 sendChatMessageStream 替代 */
+  sendMessageStream(messages: ChatMessage[], options?: SendOptions): Promise<any>;
 }
 
 // AI 模型发送器工厂接口
@@ -216,6 +224,20 @@ export interface SendOptions {
   frequencyPenalty?: number;
   presencePenalty?: number;
   jsonParams?: string;
+  // 自动继续功能：当AI响应因长度限制中断时，自动请求继续并合并响应
+  autoContinue?: boolean;
+  // 最大自动继续次数，防止无限循环
+  maxAutoContinue?: number;
+}
+
+// 自动继续状态接口
+export interface AutoContinueState {
+  isActive: boolean;
+  currentAttempt: number;
+  maxAttempts: number;
+  accumulatedContent: string;
+  lastResponseId?: string;
+  isInterrupted: boolean;
 }
 
 // 聊天响应接口
@@ -236,6 +258,8 @@ export interface ChatResponse {
     totalTokens: number;
   };
   created: number;
+  // 自动继续相关字段
+  autoContinueState?: AutoContinueState;
 }
 
 // 聊天流响应接口
@@ -251,6 +275,15 @@ export interface ChatStreamResponse {
     finishReason?: string;
   }];
   created: number;
+  // 自动继续相关字段
+  autoContinueState?: AutoContinueState;
+  // 手动继续相关字段
+  needsManualContinue?: boolean;
+  continueContext?: {
+    currentMessages: ChatMessage[];
+    accumulatedContent: string;
+    attemptCount: number;
+  };
 }
 
 // 完成响应接口

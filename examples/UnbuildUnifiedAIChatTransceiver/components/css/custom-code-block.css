@@ -1,0 +1,21 @@
+.custom-code-block {
+    white-space: pre-wrap !important; /* 关键属性：让代码自动换行 */
+    word-break: break-all !important; /* 当单词过长时强制拆分 */
+    overflow-x: auto; /* 当内容溢出时显示水平滚动条 */
+    border-bottom-left-radius: 6px !important;
+    border-bottom-right-radius: 6px !important;
+    margin-top: 0 !important;
+}
+
+/* 针对 Prism 特定元素的额外样式 */
+.custom-code-block .token {
+    word-break: break-word;
+}
+
+.custom-code-block code {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: pre-wrap !important;
+    max-width: 100%;
+    display: inline-block !important;
+}

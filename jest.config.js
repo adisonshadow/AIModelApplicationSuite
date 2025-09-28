@@ -41,6 +41,8 @@ module.exports = {
       setupFilesAfterEnv: ['<rootDir>/packages/ai_model_application_suite/src/setupTests.ts'],
       testEnvironment: 'jsdom',
       moduleNameMapper: {
+        '^ai-model-application-suite$': '<rootDir>/packages/ai_model_application_suite/dist/index.d.ts',
+        '^ai-model-application-suite/(.*)$': '<rootDir>/packages/ai_model_application_suite/dist/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
       },
       transform: {

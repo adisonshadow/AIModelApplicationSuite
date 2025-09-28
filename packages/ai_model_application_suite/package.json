@@ -1,7 +1,7 @@
 {
-  "name": "@ai-model-application-suite/core",
-  "version": "0.0.2",
-  "description": "AI Model Application Suite - Unified AI model management and chat transceiver",
+  "name": "ai-model-application-suite",
+  "version": "0.0.4",
+  "description": "AI Model Application Suite - Unified AI model management, chat transceiver with auto-continue and code block optimization",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "npm run clean && vite build -c vite.lib.config.ts && tsc --declaration --emitDeclarationOnly --outDir dist",
+    "build": "vite build -c vite.lib.config.ts && npx tsc --declaration --emitDeclarationOnly --outDir dist",
     "build:lib": "vite build -c vite.lib.config.ts",
     "dev": "tsc --watch",
     "clean": "rimraf dist",
@@ -28,7 +28,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "prepublishOnly": "npm run clean && npm run build",
+    "prepublishOnly": "npm run build",
     "prepack": "npm run build"
   },
   "peerDependencies": {
@@ -73,11 +73,17 @@
     "transceiver",
     "unified",
     "openai",
-    "volcengine"
+    "volcengine",
+    "auto-continue",
+    "code-block",
+    "markdown",
+    "streaming",
+    "hooks",
+    "typescript"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/adisonshadow/AIModelApplicationSuite.git"
+    "url": "git+https://github.com/adisonshadow/AIModelApplicationSuite.git"
   },
   "author": "Point Fang",
   "license": "MIT"

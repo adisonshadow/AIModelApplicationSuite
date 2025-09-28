@@ -9,8 +9,10 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'AIModelApplicationSuite',
       formats: ['es', 'umd'],
-      fileName: (format) => `index.${format}.js`
+      fileName: (format) => `index.${format}.js`,
+      cssFileName: 'core'
     },
+    cssCodeSplit: false,
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
       output: {
@@ -25,10 +27,9 @@ export default defineConfig({
           if (assetInfo.name === 'style.css') {
             return 'core.css';
           }
-          return assetInfo.name;
+          return assetInfo.name || 'asset';
         }
       }
-    },
-    cssCodeSplit: false
+    }
   }
 });

@@ -53,7 +53,15 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
   const [error, setError] = useState<string>('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModelConfig | undefined>();
-  const [storageManager] = useState(() => new StorageManager(storage));
+  const [storageManager] = useState(() => {
+    const manager = new StorageManager(storage);
+    console.log('🏪 AIModelManager 创建 StorageManager:', { 
+      storage, 
+      manager,
+      storageConfig: manager.getStorageConfig()
+    });
+    return manager;
+  });
 
   // 获取支持的提供商元数据
   const getSupportedProviders = useCallback((): AIProviderMeta[] => {
@@ -107,9 +115,11 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
       setLoading(true);
       setError('');
       const loadedConfigs = await storageManager.loadConfigs();
+      console.log('📋 AIModelManager 加载配置:', loadedConfigs);
       setConfigs(loadedConfigs);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载配置失败');
+      console.error('❌ AIModelManager 加载配置失败:', err);
     } finally {
       setLoading(false);
     }
@@ -117,6 +127,7 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
 
   // 组件挂载时加载数据
   useEffect(() => {
+    console.log('🔄 AIModelManager useEffect:', { visible, storage, storageManager });
     if (visible) {
       loadConfigs();
     }

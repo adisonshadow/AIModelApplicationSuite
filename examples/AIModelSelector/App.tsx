@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { AIModelSelect, AIModelManagerComponent, aiModelSelected } from '@ai-model-application-suite/core';
-import { AIModelConfig, AIProvider, StorageConfig, ThemeMode } from '@ai-model-application-suite/core';
+import { AIModelSelect, AIModelManagerComponent, aiModelSelected } from 'ai-model-application-suite';
+import { AIModelConfig, AIProvider, StorageConfig, ThemeMode } from 'ai-model-application-suite';
 import { Link } from 'react-router-dom';
 
 // 导入AI组件库的样式
-// import '@ai-model-application-suite/core/core.css';
+// import 'ai-model-application-suite/core.css';
 
 // 模拟API调用的演示
 const mockAPI = {
@@ -191,7 +191,7 @@ const DemoApp: React.FC = () => {
       }
     : {
         type: 'localStorage',
-        localStorageKey: 'demo-local-configs'
+        localStorageKey: 'ai-model-configss'
       };
 
   const handleModelChange = useCallback((modelId: string) => {

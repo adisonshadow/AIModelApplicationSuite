@@ -1,8 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AIModelSelect } from '@ai-model-application-suite/core/src/components/AIModelSelect';
-import { AIProvider, AIModelConfig } from '@ai-model-application-suite/core/src/types';
+import { AIModelSelect, AIProvider, AIModelConfig } from 'ai-model-application-suite';
 
 // Mock localStorage
 const mockLocalStorage = {

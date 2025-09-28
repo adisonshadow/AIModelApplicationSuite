@@ -18,8 +18,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["../../packages/ai_model_application_suite/*"],
-      "@ai-model-application-suite/core": ["../../packages/ai_model_application_suite/dist/index.d.ts"],
-      "@ai-model-application-suite/core/*": ["../../packages/ai_model_application_suite/dist/*"]
+      "ai-model-application-suite": ["../../packages/ai_model_application_suite/dist/index.d.ts"],
+      "ai-model-application-suite/*": ["../../packages/ai_model_application_suite/dist/*"]
     }
   },
   "include": ["**/*", "index.html"]

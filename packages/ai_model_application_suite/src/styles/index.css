@@ -172,6 +172,7 @@
 
 /* 弹窗容器 */
 .ai-modal {
+  line-height: 150%;
   background: var(--bg-color);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-lg);

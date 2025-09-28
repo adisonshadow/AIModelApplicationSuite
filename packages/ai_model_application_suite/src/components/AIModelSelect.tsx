@@ -69,7 +69,8 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
     try {
       setLoading(true);
       setError('');
-      const loadedConfigs = await modelManager.loadConfigs();
+      // 新的全局管理器不需要手动加载，直接获取配置
+      const loadedConfigs = modelManager.getConfigs();
       setConfigs(loadedConfigs);
       // 只有在没有传入 manager 时才调用 onConfigChange，避免重复
       if (!manager) {
@@ -100,16 +101,48 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
 
   // 监听管理器中的配置变化
   useEffect(() => {
-    const unsubscribe = modelManager.onConfigsChange((newConfigs: AIModelConfig[]) => {
+    const unsubscribeConfigsLoaded = modelManager.subscribe('configsLoaded', (event: any) => {
+      const newConfigs = event.data || [];
       setConfigs(newConfigs);
-      setLoading(false); // 确保加载状态被清除
-      // 只有在没有传入 manager 时才调用 onConfigChange，避免重复
+      setLoading(false);
       if (!manager) {
         onConfigChange?.(newConfigs);
       }
     });
 
-    return unsubscribe;
+    const unsubscribeConfigAdded = modelManager.subscribe('configAdded', (_event: any) => {
+      // 当添加新配置时，重新获取所有配置
+      const newConfigs = modelManager.getConfigs();
+      setConfigs(newConfigs);
+      if (!manager) {
+        onConfigChange?.(newConfigs);
+      }
+    });
+
+    const unsubscribeConfigUpdated = modelManager.subscribe('configUpdated', (_event: any) => {
+      // 当更新配置时，重新获取所有配置
+      const newConfigs = modelManager.getConfigs();
+      setConfigs(newConfigs);
+      if (!manager) {
+        onConfigChange?.(newConfigs);
+      }
+    });
+
+    const unsubscribeConfigDeleted = modelManager.subscribe('configDeleted', (_event: any) => {
+      // 当删除配置时，重新获取所有配置
+      const newConfigs = modelManager.getConfigs();
+      setConfigs(newConfigs);
+      if (!manager) {
+        onConfigChange?.(newConfigs);
+      }
+    });
+
+    return () => {
+      unsubscribeConfigsLoaded();
+      unsubscribeConfigAdded();
+      unsubscribeConfigUpdated();
+      unsubscribeConfigDeleted();
+    };
   }, [modelManager, onConfigChange, manager]);
 
   // 点击外部关闭菜单
@@ -134,7 +167,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
 
   // 处理模型选择
   const handleModelSelect = useCallback(async (modelId: string) => {
-    await modelManager.setSelectedModel(modelId);
+    await modelManager.setCurrentModel(modelId);
     // 只有在没有传入 manager 时才调用 onModelChange，避免重复
     if (!manager) {
       onModelChange?.(modelId);
@@ -178,7 +211,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   // 处理保存模型配置
   const handleSaveModel = useCallback(async (config: AIModelConfig) => {
     try {
-      await modelManager.saveConfig(config);
+      await modelManager.addConfig(config);
       setShowModal(false);
       setEditingModel(undefined);
     } catch (err) {
@@ -238,7 +271,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   // 渲染下拉选择模式
   const renderSelectMode = useCallback(() => {
     const enabledConfigs = configs.filter(config => config.enabled);
-    const currentSelectedId = selectedModelId || modelManager.getSelectedModelId();
+    const currentSelectedId = selectedModelId || modelManager.getCurrentModelId();
     
     const handleSelectChange = (value: string) => {
       if (value === '__add_model__') {
@@ -311,7 +344,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
 
   // 渲染列表模式
   const renderListMode = useCallback(() => {
-    const currentSelectedId = selectedModelId || modelManager.getSelectedModelId();
+    const currentSelectedId = selectedModelId || modelManager.getCurrentModelId();
     
     return (
       <div className={`${getThemeClassName()} ai-model-select ${className}`} style={style}>

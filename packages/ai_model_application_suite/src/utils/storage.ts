@@ -19,6 +19,11 @@ export class StorageManager {
     };
   }
 
+  // 获取存储配置
+  getStorageConfig(): StorageConfig {
+    return this.config;
+  }
+
   // 加载配置列表
   async loadConfigs(): Promise<AIModelConfig[]> {
     try {

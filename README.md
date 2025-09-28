@@ -31,6 +31,8 @@ This AI Model Application Suite is developed in TypeScript and published as npm 
 - 🔌 **Extensible**: Supports adding new AI service providers
 - 💬 **Message Streaming**: Supports both streaming and regular responses
 - 🛡️ **Type Safety**: Complete TypeScript type support
+- 🔄 **Auto Continue**: Intelligently detects response interruptions, automatically requests continuation and merges content with deduplication
+- 📝 **Code Block Optimization**: Supports automatic code block line wrapping, solves width overflow issues, provides better code reading experience
 
 <img src="https://raw.githubusercontent.com/adisonshadow/AIModelApplicationSuite/main/Screenshots/u1.png" width="1024" />
 
@@ -41,9 +43,9 @@ This AI Model Application Suite is developed in TypeScript and published as npm 
 **Note: Currently for personal use and optimization, not published as npm package**
 
 ```bash
-npm install react-ai-model-manager
+npm install ai-model-application-suite
 # or
-yarn add react-ai-model-manager
+yarn add ai-model-application-suite
 ```
 
 ### Peer Dependencies
@@ -72,24 +74,85 @@ npm install @ai-sdk/deepseek
 
 ## 🎯 Quick Start
 
+### 🆕 New API Usage (v0.0.4 Recommended)
+
+#### Using React Hook - Simplest Way
+
+```tsx
+import React from 'react';
+import { useAIModel, useAIEvents } from 'ai-model-application-suite';
+
+function App() {
+  // Get AI model state and operations
+  const { 
+    currentModel, 
+    configs, 
+    setCurrentModel, 
+    addConfig 
+  } = useAIModel();
+
+  // Get AI event state and operations
+  const { 
+    startConversation, 
+    stopConversation, 
+    sendMessage 
+  } = useAIEvents();
+
+  return (
+    <div>
+      <h3>Current Model: {currentModel?.name || 'None'}</h3>
+      <button onClick={() => startConversation()}>Start Conversation</button>
+      <button onClick={() => sendMessage('Hello')}>Send Message</button>
+    </div>
+  );
+}
+```
+
+#### Using Global Manager - More Flexible Way
+
+```tsx
+import React, { useEffect } from 'react';
+import { globalAIModelManager, aiEventManager } from 'ai-model-application-suite';
+
+function App() {
+  useEffect(() => {
+    // Initialize manager
+    globalAIModelManager.initialize();
+    
+    // Listen for model selection changes
+    const unsubscribe = globalAIModelManager.subscribe('modelSelected', (event) => {
+      console.log('Model selection changed:', event.data);
+    });
+    
+    return unsubscribe;
+  }, []);
+
+  return <div>Using Global Manager</div>;
+}
+```
+
 ### AI Model Selector - Basic Usage
 
 ```tsx
-import React, { useState } from 'react';
-import { AIModelSelect, aiModelSelected } from 'react-ai-model-manager';
+import React from 'react';
+import { AIModelSelect, useAIModel, AIProvider } from 'ai-model-application-suite';
 
 function App() {
-  const [selectedModelId, setSelectedModelId] = useState<string>('');
+  const { currentModelId, setCurrentModel, configs } = useAIModel();
   
   return (
     <AIModelSelect
-      selectedModelId={selectedModelId}
-      onModelChange={setSelectedModelId}
+      selectedModelId={currentModelId}
+      onModelChange={setCurrentModel}
       supportedProviders={[
         AIProvider.OPENAI,
         AIProvider.DEEPSEEK,
         AIProvider.ANTHROPIC
       ]}
+      storage={{
+        type: 'localStorage',
+        localStorageKey: 'ai-model-configs'
+      }}
     />
   );
 }
@@ -98,46 +161,52 @@ function App() {
 ### AI Model Selector - Custom Option Format
 
 ```tsx
-import React, { useState } from 'react';
-import { AIModelSelect, AIProvider } from 'react-ai-model-manager';
+import React from 'react';
+import { AIModelSelect, useAIModel, AIProvider } from 'ai-model-application-suite';
 
 function App() {
-  const [selectedModelId, setSelectedModelId] = useState<string>('');
+  const { currentModelId, setCurrentModel } = useAIModel();
   
   return (
     <AIModelSelect
-      selectedModelId={selectedModelId}
-      onModelChange={setSelectedModelId}
+      selectedModelId={currentModelId}
+      onModelChange={setCurrentModel}
       supportedProviders={[
         AIProvider.OPENAI,
         AIProvider.DEEPSEEK,
         AIProvider.ANTHROPIC
       ]}
       formatLabel={(config) => config.name} // Show only config name
+      storage={{
+        type: 'localStorage',
+        localStorageKey: 'ai-model-configs'
+      }}
     />
   );
 }
 ```
 
-### AI Model Selector - Using Unified Manager
+### AI Model Selector - Using Global Manager
 
 ```tsx
-import React, { useState, useEffect } from 'react';
-import { AIModelSelect, aiModelSelected } from 'react-ai-model-manager';
-import type { AIModelConfig } from 'react-ai-model-manager/types';
+import React, { useEffect } from 'react';
+import { AIModelSelect, getGlobalAIModelManager } from 'ai-model-application-suite';
+import type { AIModelConfig } from 'ai-model-application-suite/types';
 
 function App() {
-  const [selectedModel, setSelectedModel] = useState<AIModelConfig | null>(null);
-
   useEffect(() => {
-    // Listen for selection changes (triggers on first load too)
-    const unsubscribe = aiModelSelected.onChange((config) => {
-      setSelectedModel(config);
-      console.log('Model selection changed:', config);
+    const manager = getGlobalAIModelManager({
+      type: 'localStorage',
+      localStorageKey: 'ai-model-configs'
+    });
+
+    // Listen for selection changes
+    const unsubscribe = manager.subscribe('modelSelected', (event) => {
+      console.log('Model selection changed:', event.data);
     });
 
     // Initialize manager
-    aiModelSelected.initialize();
+    manager.initialize();
 
     return unsubscribe;
   }, []);
@@ -147,16 +216,11 @@ function App() {
       <AIModelSelect
         mode="select"
         placeholder="Please select AI model"
-        manager={aiModelSelected}
+        storage={{
+          type: 'localStorage',
+          localStorageKey: 'ai-model-configs'
+        }}
       />
-      
-      {selectedModel && (
-        <div>
-          <h3>Currently Selected Model:</h3>
-          <p>Name: {selectedModel.name}</p>
-          <p>Provider: {selectedModel.provider}</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -165,7 +229,7 @@ function App() {
 ### Unified AI Message Transceiver - Basic Usage
 
 ```tsx
-import { createAIModelSender } from 'react-ai-model-manager';
+import { createAIModelSender } from 'ai-model-application-suite';
 
 // Create sender instance
 const sender = createAIModelSender({
@@ -177,13 +241,44 @@ const sender = createAIModelSender({
 });
 
 // Send message
-const response = await sender.sendMessage({
-  messages: [
-    { role: 'user', content: 'Hello, please introduce yourself' }
-  ]
+const response = await sender.sendChatMessage([
+  { role: 'user', content: 'Hello, please introduce yourself' }
+]);
+
+console.log(response.choices[0].message.content);
+```
+
+### Unified AI Message Transceiver - Auto Continue Feature
+
+```tsx
+import { createAIModelSender } from 'ai-model-application-suite';
+
+const sender = createAIModelSender(config);
+
+// Enable auto continue feature
+const response = await sender.sendChatMessage([
+  { role: 'user', content: 'Please explain the development history of artificial intelligence in detail, including important stages and milestone events.' }
+], {
+  autoContinue: true,        // Enable auto continue
+  maxAutoContinue: 3,        // Maximum auto continue attempts
+  maxTokens: 500,            // Intentionally set smaller token limit to test auto continue
+  temperature: 0.7
 });
 
-console.log(response.content);
+console.log('Final content:', response.choices[0].message.content);
+console.log('Auto continue state:', response.autoContinueState);
+
+// Streaming response also supports auto continue
+const streamResponse = await sender.sendChatMessageStream([
+  { role: 'user', content: 'Please write a long article about spring' }
+], {
+  autoContinue: true,
+  maxAutoContinue: 2,
+  maxTokens: 300
+}, (chunk) => {
+  // Real-time processing of streaming data
+  console.log('Streaming data:', chunk);
+});
 ```
 
 ### Unified AI Message Transceiver - Streaming Response
@@ -214,8 +309,8 @@ for await (const chunk of stream) {
 
 ```tsx
 import React from 'react';
-import { AIModelSelect, createAIModelManager } from 'react-ai-model-manager';
-import type { StorageConfig } from 'react-ai-model-manager/types';
+import { AIModelSelect, createAIModelManager } from 'ai-model-application-suite';
+import type { StorageConfig } from 'ai-model-application-suite/types';
 
 function CustomStorageExample() {
   // Create custom manager instance
@@ -249,8 +344,8 @@ function CustomStorageExample() {
 
 ```tsx
 import React from 'react';
-import { AIModelSelect, createAIModelManager } from 'react-ai-model-manager';
-import type { StorageConfig } from 'react-ai-model-manager/types';
+import { AIModelSelect, createAIModelManager } from 'ai-model-application-suite';
+import type { StorageConfig } from 'ai-model-application-suite/types';
 
 function APIStorageExample() {
   const apiStorageConfig: StorageConfig = {
@@ -341,7 +436,7 @@ try {
 
 ```tsx
 import React from 'react';
-import { AIModelSelect } from 'react-ai-model-manager';
+import { AIModelSelect } from 'ai-model-application-suite';
 
 function ThemeExample() {
   return (
@@ -375,7 +470,7 @@ function ThemeExample() {
 
 ```tsx
 import React from 'react';
-import { AIModelSelect } from 'react-ai-model-manager';
+import { AIModelSelect } from 'ai-model-application-suite';
 
 function CustomStyleExample() {
   return (
@@ -630,8 +725,14 @@ The project includes complete demo applications showcasing various features and 
 # AI Model Selector demo
 cd examples/AIModelSelector && npm install && npm run dev
 
-# AI Message Transceiver demo
-cd examples/AIModelSender && npm install && npm run dev
+# Unified AI Chat Transceiver demo
+cd examples/UnifiedAIChatTransceiver && npm install && npm run dev
+
+# Unbuild Unified AI Chat Transceiver demo (includes code block line wrapping feature)
+cd examples/UnbuildUnifiedAIChatTransceiver && npm install && npm run dev
+
+# Unbuild Selector demo
+cd examples/UnbuildSelector && npm install && npm run dev
 ```
 
 ### Demo Features
@@ -647,6 +748,10 @@ cd examples/AIModelSender && npm install && npm run dev
 - 📡 Event-driven architecture
 - 💬 Message streaming response
 - 🛡️ Error handling demo
+- 🔄 **Auto Continue Feature Demo** - Complete demonstration of auto continue functionality usage and effects
+- 🧪 **Auto Continue Testing** - Provides test components to verify auto continue functionality
+- 📊 **State Monitoring** - Real-time display of auto continue state and progress
+- 📝 **Code Block Line Wrapping Demo** - Demonstrates code block automatic line wrapping and width control functionality
 
 ## 🛠️ Development
 
@@ -654,18 +759,31 @@ cd examples/AIModelSender && npm install && npm run dev
 
 ```
 packages/
-├── ai-model-manager/     # AI Model Selector
-│   ├── components/       # React components
-│   ├── types/           # TypeScript type definitions
-│   ├── utils/           # Utility functions
-│   └── styles/          # Style files
-├── unified-AI-chat-transceiver/      # AI Message Transceiver
-│   ├── src/             # Source code
-│   ├── types/           # TypeScript type definitions
-│   └── providers/       # AI service provider implementations
+├── ai_model_application_suite/     # Main package
+│   ├── src/
+│   │   ├── components/       # React components
+│   │   ├── types/           # TypeScript type definitions
+│   │   ├── utils/           # Utility functions
+│   │   │   ├── AutoContinueManager.ts  # Auto continue manager
+│   │   │   ├── GlobalAIModelManager.ts # Global AI model manager
+│   │   │   ├── AIEventManager.ts       # AI event manager
+│   │   │   └── storage.ts              # Storage management
+│   │   ├── providers/       # AI service provider implementations
+│   │   ├── hooks/           # React Hooks
+│   │   ├── examples/        # Example components
+│   │   │   ├── AutoContinueExample.tsx # Auto continue usage example
+│   │   │   └── AutoContinueTest.tsx    # Auto continue test component
+│   │   └── styles/          # Style files
 examples/
 ├── AIModelSelector/     # AI Model Selector demo
-└── AIModelSender/       # AI Message Transceiver demo
+├── UnifiedAIChatTransceiver/  # Unified AI Chat Transceiver demo
+├── UnbuildUnifiedAIChatTransceiver/  # Unbuild Unified AI Chat Transceiver demo
+│   ├── components/
+│   │   ├── css/
+│   │   │   └── custom-code-block.css  # Code block line wrapping styles
+│   │   └── MarkdownRenderer.tsx       # Markdown renderer
+│   └── markdown-theme-samantha.css    # Markdown theme styles
+└── UnbuildSelector/     # Unbuild Selector demo
 ```
 
 ### Local Development
@@ -673,7 +791,7 @@ examples/
 ```bash
 # Clone project
 git clone <repository-url>
-cd react-ai-model-manager
+cd packages/ai_model_application_suite
 
 # Install dependencies
 yarn install
@@ -687,6 +805,37 @@ yarn build:lib
 # Build demo applications
 yarn build
 ```
+
+## 🛠️ Build Commands
+
+### Build Command Comparison
+
+| Command | Description | Output Files | Use Case |
+|---------|-------------|--------------|----------|
+| `build` | **Full Build**: Clean + Vite build + TypeScript declaration generation | JS files + CSS files + **Declaration files (.d.ts)** | Production release, CI/CD |
+| `build:lib` | **Quick Build**: Vite build only | JS files + CSS files | Development debugging, quick testing |
+
+### Usage Recommendations
+
+| Scenario | Recommended Command | Reason |
+|----------|---------------------|--------|
+| **Development Debugging** | `npm run build:lib` | Fast build speed, suitable for frequent debugging |
+| **Local Testing** | `npm run build:lib` | Quick feature validation, no type declarations needed |
+| **Pre-release Testing** | `npm run build` | Complete build, ensures all files are generated correctly |
+| **Publishing to npm** | `npm run build` | Users need TypeScript declaration files |
+| **CI/CD Pipeline** | `npm run build` | Ensures build completeness and type safety |
+
+### Build Workflow
+
+```bash
+# Development phase - Quick build
+npm run build:lib
+
+# Release phase - Complete build
+npm run build
+```
+
+**Note**: Always use `npm run build` before publishing to npm to ensure complete type declaration files are generated.
 
 ### Adding New AI Providers
 
@@ -705,6 +854,50 @@ Welcome to submit Issues and Pull Requests!
 
 ## 📝 Changelog
 
+### v0.0.4 (Latest)
+- 🆕 **Added Code Block Line Wrapping Support** - Fixed AI output code block width overflow issues, supports inline line wrapping display
+  - Added `custom-code-block.css` style file, specifically handles code block line wrapping
+  - Optimized `SyntaxHighlighter` configuration, added `whiteSpace: 'pre-wrap'` and `wordBreak: 'break-word'`
+  - Updated `markdown-theme-samantha.css` styles, supports automatic code block line wrapping
+  - Improved code block Header styles, using more modern color scheme
+- 🆕 **Added Global AI Model Manager** - Supports singleton pattern and publish-subscribe mechanism, provides `GlobalAIModelManager` and `getGlobalAIModelManager()`
+- 🆕 **Added React Hook Wrapper** - Simplifies component usage, provides `useAIModel`, `useCurrentAIModel`, `useAIEvents`, `useConversation`, `useStreaming`, etc.
+- 🆕 **Added AI Event Manager** - Supports stopping conversations, creating new sessions and other events, provides `AIEventManager` and `getAIEventManager()`
+- 🆕 **Added Unified Error Handling** - Global error capture and handling mechanism, supports custom error handlers
+- 🆕 **Added Streaming Response Management** - Supports start/cancel streaming responses, provides `cancelStream()` method (`stopStream()` deprecated)
+- 🆕 **Added Chat Functionality Examples** - Complete chat application examples, supports cancel functionality
+- 🆕 **Added Auto Continue Feature** - When AI responses are interrupted due to length limits, automatically requests continuation and merges responses, supports deduplication synthesis
+  - Smart interruption detection: automatically identifies response interruptions due to token limits
+  - Auto continue requests: intelligently generates continuation requests, ensures content completeness
+  - Deduplication synthesis: automatically detects and merges duplicate content fragments
+  - State tracking: provides detailed auto continue state information
+  - Supports auto continue for both regular and streaming messages
+- 🆕 **Added AutoContinueManager** - Specialized tool class for managing auto continue logic, supports smart interruption detection and content merging
+  - Singleton pattern design, ensures state consistency
+  - Multiple interruption detection strategies, improves accuracy
+  - Smart deduplication algorithm, content merging based on overlap detection
+  - Complete error handling and state management
+- 🔧 **Improved API Design** - More concise API, better type safety, unified storage configuration management
+- 🔧 **Improved Singleton Pattern** - Supports dynamic storage configuration, ensures state synchronization between multiple components
+- 🔧 **Improved Event System** - Complete event listening and cancellation mechanism
+- 🔧 **Improved Long Text Processing** - Through auto continue functionality, significantly improves completeness of long text responses
+- 🔧 **Improved Code Block Rendering** - Optimized code block styles and interaction experience, solves width overflow issues
+
+### v0.0.3
+- 🆕 **Added Global AI Model Manager** - Supports singleton pattern and publish-subscribe mechanism, provides `GlobalAIModelManager` and `getGlobalAIModelManager()`
+- 🆕 **Added React Hook Wrapper** - Simplifies component usage, provides `useAIModel`, `useCurrentAIModel`, `useAIEvents`, `useConversation`, `useStreaming`, etc.
+- 🆕 **Added AI Event Manager** - Supports stopping conversations, creating new sessions and other events, provides `AIEventManager` and `getAIEventManager()`
+- 🆕 **Added Unified Error Handling** - Global error capture and handling mechanism, supports custom error handlers
+- 🆕 **Added Streaming Response Management** - Supports start/cancel streaming responses, provides `cancelStream()` method (`stopStream()` deprecated)
+- 🆕 **Added Chat Functionality Examples** - Complete chat application examples, supports cancel functionality
+- 🆕 **Added Auto Continue Feature** - When AI responses are interrupted due to length limits, automatically requests continuation and merges responses, supports deduplication synthesis
+- 🆕 **Added AutoContinueManager** - Specialized tool class for managing auto continue logic, supports smart interruption detection and content merging
+- 🔧 **Improved API Design** - More concise API, better type safety, unified storage configuration management
+- 🔧 **Improved Singleton Pattern** - Supports dynamic storage configuration, ensures state synchronization between multiple components
+- 🔧 **Improved Event System** - Complete event listening and cancellation mechanism
+- 🔧 **Improved Long Text Processing** - Through auto continue functionality, significantly improves completeness of long text responses
+
+### v0.0.2
 - Initial version release
 - Support for mainstream AI providers
 - Provide localStorage and API storage methods

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import {
   AIModelSelect,
   AIModelManagerComponent,
-  aiModelSelected,
+  getGlobalAIModelManager,
 } from "../../packages/ai_model_application_suite/src";
 import {
   AIModelConfig,
@@ -38,45 +38,6 @@ const mockAPI = {
           apiKey: "sk-demo-key-hidden",
           baseURL: "https://api.openai.com/v1",
           model: "gpt-4",
-        },
-      },
-      {
-        id: "demo-2",
-        name: "DeepSeek Demo",
-        provider: AIProvider.DEEPSEEK,
-        enabled: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        config: {
-          apiKey: "sk-demo-deepseek-key",
-          baseURL: "https://api.deepseek.com/v1",
-          model: "deepseek-v3-1-250821",
-        },
-      },
-      {
-        id: "demo-3",
-        name: "Anthropic Demo",
-        provider: AIProvider.ANTHROPIC,
-        enabled: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        config: {
-          apiKey: "sk-ant-demo-key",
-          baseURL: "https://api.anthropic.com",
-          model: "claude-3-sonnet-20240229",
-        },
-      },
-      {
-        id: "demo-4",
-        name: "Volcengine Demo",
-        provider: AIProvider.VOLCENGINE,
-        enabled: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        config: {
-          apiKey: "sk-volcengine-demo-key",
-          baseURL: "https://ark.cn-beijing.volces.com/api/v3",
-          model: "gpt-3.5-turbo",
         },
       },
     ];
@@ -146,6 +107,17 @@ const mockAPI = {
   },
 };
 
+const providerList = [
+    AIProvider.OPENAI,
+    AIProvider.OPENAILIKE,
+    AIProvider.DEEPSEEK,
+    AIProvider.ANTHROPIC,
+    AIProvider.GOOGLE,
+    AIProvider.OLLAMA,
+    AIProvider.MISTRAL,
+    AIProvider.VOLCENGINE,
+];
+
 const DemoApp: React.FC = () => {
   const [selectedModelId, setSelectedModelId] = useState<string>("");
   const [configs, setConfigs] = useState<AIModelConfig[]>([]);
@@ -155,24 +127,31 @@ const DemoApp: React.FC = () => {
   const [customStyle, setCustomStyle] = useState(false);
   const [showManager, setShowManager] = useState(false);
 
-  // 添加 aiModelSelected 监听
+  // 添加 globalAIModelManager 监听
   useEffect(() => {
+    // 使用正确的存储配置重新获取管理器实例
+    const manager = getGlobalAIModelManager(storageConfig);
+    
+    // 初始化管理器
+    manager.initialize();
+    
     // 监听选择变化
-    const unsubscribe = aiModelSelected.onChange((config) => {
-      if (config) {
-        setSelectedModelId(config.id);
-        console.log("aiModelSelected 选择变化:", config);
+    const unsubscribe = manager.subscribe('modelSelected', (event: any) => {
+      if (event.data?.config) {
+        setSelectedModelId(event.data.config.id);
+        console.log("globalAIModelManager 选择变化:", event.data.config);
       }
     });
 
     // 监听配置列表变化
-    const unsubscribeConfigs = aiModelSelected.onConfigsChange((newConfigs) => {
-      setConfigs(newConfigs);
-      console.log("aiModelSelected 配置变化:", newConfigs);
+    const unsubscribeConfigs = manager.subscribe('configsLoaded', (event: any) => {
+      setConfigs(event.data || []);
+      console.log("globalAIModelManager 配置变化:", event.data);
     });
 
-    // 初始化管理器
-    aiModelSelected.initialize();
+    // 获取初始状态
+    setSelectedModelId(manager.getCurrentModelId() || '');
+    setConfigs(manager.getConfigs());
 
     return () => {
       unsubscribe();
@@ -200,36 +179,22 @@ const DemoApp: React.FC = () => {
         }
       : {
           type: "localStorage",
-          localStorageKey: "demo-local-configs",
+          localStorageKey: "ai-model-configs",
         };
 
   const handleModelChange = useCallback((modelId: string) => {
-    // 不再需要手动设置，因为 aiModelSelected 已经处理了
     console.log("选中的模型ID:", modelId);
-  }, []);
+    setSelectedModelId(modelId);
+    // 同时更新 globalAIModelManager
+    const manager = getGlobalAIModelManager(storageConfig);
+    manager.setCurrentModel(modelId);
+  }, [storageConfig]);
 
   const handleConfigChange = useCallback((newConfigs: AIModelConfig[]) => {
-    // 不再需要手动设置，因为 aiModelSelected 已经处理了
     console.log("配置更新:", newConfigs);
+    setConfigs(newConfigs);
   }, []);
 
-  // 获取提供商显示名称
-  const getProviderDisplayName = useCallback((provider: AIProvider): string => {
-    const providerNames = {
-      [AIProvider.OPENAI]: "OpenAI",
-      [AIProvider.OPENAILIKE]: "OpenAI-like",
-      [AIProvider.DEEPSEEK]: "DeepSeek",
-      [AIProvider.ANTHROPIC]: "Anthropic",
-      [AIProvider.GOOGLE]: "Google",
-      [AIProvider.MISTRAL]: "Mistral",
-      [AIProvider.COHERE]: "Cohere",
-      [AIProvider.AZURE]: "Azure",
-      [AIProvider.OLLAMA]: "Ollama",
-      [AIProvider.VOLCENGINE]: "Volcengine",
-      [AIProvider.CUSTOM]: "Custom",
-    };
-    return providerNames[provider] || provider;
-  }, []);
 
   // 生成自定义样式类名 - 使用扩展样式
   const getCustomClassName = useCallback(() => {
@@ -621,7 +586,7 @@ const DemoApp: React.FC = () => {
         }}
       >
         <h2 style={{ color: "#1e293b", marginBottom: "8px" }}>
-          React AI Model Selector/Manager 🚚  (使用未编译的包文件)
+          React AI Model Selector/Manager 🚚 
         </h2>
         <p style={{ color: "#64748b", marginBottom: "32px" }}>
           这是一个使用未编译源码的AI模型配置和选择React组件包演示页面，支持扩展样式主题
@@ -1110,16 +1075,10 @@ const DemoApp: React.FC = () => {
                   onModelChange={handleModelChange}
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
-                  supportedProviders={[
-                    AIProvider.OPENAI,
-                    AIProvider.OPENAILIKE,
-                    AIProvider.DEEPSEEK,
-                    AIProvider.ANTHROPIC,
-                    AIProvider.GOOGLE,
-                  ]}
+                  supportedProviders={providerList}
                   placeholder="选择一个AI模型..."
                   customClassName={getCustomClassName()}
-                  manager={aiModelSelected}
+                  manager={getGlobalAIModelManager(storageConfig)}
                 />
 
                 <h4 style={{ color: "#1e293b", margin: "30px 0 16px 0" }}>
@@ -1133,16 +1092,10 @@ const DemoApp: React.FC = () => {
                   onModelChange={handleModelChange}
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
-                  supportedProviders={[
-                    AIProvider.OPENAI,
-                    AIProvider.OPENAILIKE,
-                    AIProvider.DEEPSEEK,
-                    AIProvider.ANTHROPIC,
-                    AIProvider.GOOGLE,
-                  ]}
+                  supportedProviders={providerList}
                   placeholder="选择一个AI模型..."
                   customClassName={getCustomClassName()}
-                  manager={aiModelSelected}
+                  manager={getGlobalAIModelManager(storageConfig)}
                   formatLabel={(config) => config.name} // 只显示配置名称
                 />
               </div>
@@ -1164,23 +1117,14 @@ const DemoApp: React.FC = () => {
                   onModelChange={handleModelChange}
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
-                  supportedProviders={[
-                    AIProvider.OPENAI,
-                    AIProvider.OPENAILIKE,
-                    AIProvider.DEEPSEEK,
-                    AIProvider.ANTHROPIC,
-                    AIProvider.GOOGLE,
-                    AIProvider.OLLAMA,
-                    AIProvider.MISTRAL,
-                    AIProvider.VOLCENGINE,
-                  ]}
+                  supportedProviders={providerList}
                   addButtonText="➕ 添加AI模型"
                   allowDelete={true}
                   style={{
                     minWidth: "100%",
                   }}
                   customClassName={getCustomClassName()}
-                  manager={aiModelSelected}
+                  manager={getGlobalAIModelManager(storageConfig)}
                 />
               </div>
             </div>
@@ -1226,16 +1170,10 @@ const DemoApp: React.FC = () => {
                   onModelChange={handleModelChange}
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
-                  supportedProviders={[
-                    AIProvider.OPENAI,
-                    AIProvider.DEEPSEEK,
-                    AIProvider.ANTHROPIC,
-                    AIProvider.GOOGLE,
-                    AIProvider.VOLCENGINE,
-                  ]}
+                  supportedProviders={providerList}
                   placeholder="选择一个AI模型..."
                   customClassName={getCustomClassName()}
-                  manager={aiModelSelected}
+                  manager={getGlobalAIModelManager(storageConfig)}
                 />
               </div>
             </div>
@@ -1256,20 +1194,11 @@ const DemoApp: React.FC = () => {
                   onModelChange={handleModelChange}
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
-                  supportedProviders={[
-                    AIProvider.OPENAI,
-                    AIProvider.OPENAILIKE,
-                    AIProvider.DEEPSEEK,
-                    AIProvider.ANTHROPIC,
-                    AIProvider.GOOGLE,
-                    AIProvider.OLLAMA,
-                    AIProvider.MISTRAL,
-                    AIProvider.VOLCENGINE,
-                  ]}
+                  supportedProviders={providerList}
                   addButtonText="➕ 添加AI模型"
                   allowDelete={true}
                   customClassName={getCustomClassName()}
-                  manager={aiModelSelected}
+                  manager={getGlobalAIModelManager(storageConfig)}
                 />
               </div>
             </div>
@@ -1351,15 +1280,7 @@ const DemoApp: React.FC = () => {
         onClose={() => setShowManager(false)}
         onConfigChange={handleConfigChange}
         storage={storageConfig}
-        supportedProviders={[
-          AIProvider.OPENAI,
-          AIProvider.DEEPSEEK,
-          AIProvider.ANTHROPIC,
-          AIProvider.GOOGLE,
-          AIProvider.OLLAMA,
-          AIProvider.MISTRAL,
-          AIProvider.VOLCENGINE,
-        ]}
+        supportedProviders={providerList}
         customClassName={getCustomClassName()}
       />
     </>
@@ -1367,128 +1288,3 @@ const DemoApp: React.FC = () => {
 };
 
 export default DemoApp;
-
-/*
-===============================================================================
-AI模型选择器使用说明文档
-===============================================================================
-
-## 新增功能：aiModelSelected 管理器
-
-### 1. 基本使用
-```typescript
-import { AIModelSelect, aiModelSelected } from 'ai_model_application_suite';
-
-function App() {
-  const [selectedModel, setSelectedModel] = useState(null);
-
-  useEffect(() => {
-    // 监听选择变化（第一次加载也会触发）
-    const unsubscribe = aiModelSelected.onChange((config) => {
-      setSelectedModel(config);
-      console.log('模型选择变化:', config);
-    });
-
-    // 初始化管理器
-    aiModelSelected.initialize();
-
-    return unsubscribe;
-  }, []);
-
-  return (
-    <AIModelSelect
-      mode="select"
-      placeholder="请选择AI模型"
-    />
-  );
-}
-```
-
-### 2. 主动查询方法
-```typescript
-// 获取当前选中的模型配置
-const currentModel = aiModelSelected.getSelectedModel();
-
-// 获取当前选中的模型ID
-const currentModelId = aiModelSelected.getSelectedModelId();
-
-// 获取所有配置
-const allConfigs = aiModelSelected.getConfigs();
-```
-
-### 3. 高级使用（自定义管理器实例）
-```typescript
-import { AIModelSelect, createAIModelManager } from 'ai_model_application_suite';
-
-function App() {
-  // 创建自定义管理器实例
-  const customManager = createAIModelManager({
-    type: 'localStorage',
-    localStorageKey: 'my-custom-configs'
-  });
-
-  useEffect(() => {
-    // 监听配置列表变化
-    const unsubscribe = customManager.onConfigsChange((configs) => {
-      console.log('配置列表变化:', configs);
-    });
-
-    customManager.initialize();
-    return unsubscribe;
-  }, []);
-
-  return (
-    <AIModelSelect
-      mode="list"
-      manager={customManager}
-      showAddButton={true}
-      addButtonText="添加新模型"
-    />
-  );
-}
-```
-
-### 4. 管理器API
-
-#### 事件监听
-- `onChange(callback)`: 监听选择变化
-- `onConfigsChange(callback)`: 监听配置列表变化
-
-#### 查询方法
-- `getSelectedModel()`: 获取当前选中的模型配置
-- `getSelectedModelId()`: 获取当前选中的模型ID
-- `getConfigs()`: 获取所有配置
-- `getConfigById(id)`: 根据ID获取配置
-
-#### 操作方法
-- `setSelectedModel(modelId)`: 设置选中的模型
-- `saveConfig(config)`: 保存配置
-- `deleteConfig(id)`: 删除配置
-- `updateConfig(id, updates)`: 更新配置
-
-#### 生命周期
-- `initialize()`: 初始化管理器
-- `destroy()`: 销毁管理器（清理回调）
-
-### 5. 存储配置
-
-支持多种存储方式：
-
-```typescript
-// localStorage (默认)
-const manager = createAIModelManager({
-  type: 'localStorage',
-  localStorageKey: 'my-configs'
-});
-
-// API
-const manager = createAIModelManager({
-  type: 'api',
-  api: {
-    getConfigs: () => fetch('/api/configs').then(r => r.json()),
-    saveConfig: (config) => fetch('/api/configs', { method: 'POST', body: JSON.stringify(config) }),
-    deleteConfig: (id) => fetch(`/api/configs/${id}`, { method: 'DELETE' })
-  }
-```
-
-*/

@@ -15,7 +15,7 @@
     "@antv/gpt-vis": "^0.5.3",
     "@types/markdown-it": "^14.1.2",
     "@types/react-router-dom": "^5.3.3",
-    "ai_model_application_suite": "@/ai_model_application_suite/core",
+    "ai-model-application-suite": "*",
     "antd": "^5.27.1",
     "highlight.js": "^11.11.1",
     "markdown-it": "^14.1.0",

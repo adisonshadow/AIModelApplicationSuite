@@ -2,6 +2,7 @@ import { AIModelConfig, StorageConfig } from '../types';
 import { StorageManager } from './storage';
 
 // AI模型选择器类
+/** @deprecated 请使用 GlobalAIModelManager 替代，将在 v1.0.0 中移除 */
 export class AIModelManager {
   private storageManager: StorageManager;
   private configs: AIModelConfig[] = [];
@@ -209,6 +210,7 @@ export class AIModelManager {
 }
 
 // 创建默认的管理器实例
+/** @deprecated 请使用 GlobalAIModelManager.getInstance() 替代，将在 v1.0.0 中移除 */
 export function createAIModelManager(storage?: StorageConfig): AIModelManager {
   return new AIModelManager(storage);
 }
