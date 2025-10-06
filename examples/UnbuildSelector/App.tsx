@@ -111,11 +111,11 @@ const providerList = [
     AIProvider.OPENAI,
     AIProvider.OPENAILIKE,
     AIProvider.DEEPSEEK,
-    AIProvider.ANTHROPIC,
+    AIProvider.VOLCENGINE,
+    AIProvider.ALIYUN_BAILIAN,
     AIProvider.GOOGLE,
     AIProvider.OLLAMA,
-    AIProvider.MISTRAL,
-    AIProvider.VOLCENGINE,
+    // AIProvider.ANTHROPIC
 ];
 
 const DemoApp: React.FC = () => {
@@ -585,12 +585,6 @@ const DemoApp: React.FC = () => {
           padding: "20px",
         }}
       >
-        <h2 style={{ color: "#1e293b", marginBottom: "8px" }}>
-          React AI Model Selector/Manager 🚚 
-        </h2>
-        <p style={{ color: "#64748b", marginBottom: "32px" }}>
-          这是一个使用未编译源码的AI模型配置和选择React组件包演示页面，支持扩展样式主题
-        </p>
 
         {/* 配置选项 */}
         <div
@@ -603,7 +597,7 @@ const DemoApp: React.FC = () => {
           }}
         >
           <h3 style={{ color: "#1e293b", marginTop: 0, marginBottom: "16px" }}>
-            演示配置
+            Demo Configuration
           </h3>
 
           <div
@@ -622,7 +616,7 @@ const DemoApp: React.FC = () => {
                   marginRight: "8px",
                 }}
               >
-                存储方式:
+                Storage Type:
               </label>
               <select
                 value={storageType}
@@ -636,7 +630,7 @@ const DemoApp: React.FC = () => {
                 }}
               >
                 <option value="localStorage">LocalStorage</option>
-                <option value="api">API模式</option>
+                <option value="api">API</option>
               </select>
             </div>
 
@@ -651,7 +645,7 @@ const DemoApp: React.FC = () => {
                 htmlFor="customStyle"
                 style={{ color: "#374151", fontWeight: 500 }}
               >
-                启用自定义样式
+                Enable Custom Styles
               </label>
             </div>
 
@@ -679,7 +673,7 @@ const DemoApp: React.FC = () => {
                   setShowManager(true);
                 }}
               >
-                ⚒️ AI模型配置
+                ⚒️ AI Model Configuration
               </button>
               {showManager && (
                 <span
@@ -689,7 +683,7 @@ const DemoApp: React.FC = () => {
                     fontSize: "12px",
                   }}
                 >
-                  (管理器已打开)
+                  (Manager is opened)
                 </span>
               )}
             </div>
@@ -713,7 +707,7 @@ const DemoApp: React.FC = () => {
                   fontSize: "14px",
                 }}
               >
-                🎨 样式自定义选项
+                🎨 Style Customization Options
               </h4>
 
               <div
@@ -749,7 +743,7 @@ const DemoApp: React.FC = () => {
                       marginBottom: "4px",
                     }}
                   >
-                    主色调
+                    Brand Color
                   </label>
                   <select
                     value={primaryColor}
@@ -761,11 +755,11 @@ const DemoApp: React.FC = () => {
                       borderRadius: "4px",
                     }}
                   >
-                    <option value="blue">🔵 蓝色</option>
-                    <option value="purple">🟣 紫色</option>
-                    <option value="green">🟢 绿色</option>
-                    <option value="orange">🟠 橙色</option>
-                    <option value="red">🔴 红色</option>
+                    <option value="blue">🔵 Blue</option>
+                    <option value="purple">🟣 Purple</option>
+                    <option value="green">🟢 Green</option>
+                    <option value="orange">🟠 Orange</option>
+                    <option value="red">🔴 Red</option>
                   </select>
                 </div>
 
@@ -779,7 +773,7 @@ const DemoApp: React.FC = () => {
                       marginBottom: "4px",
                     }}
                   >
-                    组件尺寸
+                    Size
                   </label>
                   <select
                     value={size}
@@ -791,9 +785,9 @@ const DemoApp: React.FC = () => {
                       borderRadius: "4px",
                     }}
                   >
-                    <option value="compact">🔍 紧凑</option>
-                    <option value="normal">📱 正常</option>
-                    <option value="large">💻 大号</option>
+                    <option value="compact">🔍 Compact</option>
+                    <option value="normal">📱 Normal</option>
+                    <option value="large">💻 Large</option>
                   </select>
                 </div>
 
@@ -807,7 +801,7 @@ const DemoApp: React.FC = () => {
                       marginBottom: "4px",
                     }}
                   >
-                    圆角大小
+                    Corner Radius
                   </label>
                   <select
                     value={borderRadius}
@@ -819,11 +813,11 @@ const DemoApp: React.FC = () => {
                       borderRadius: "4px",
                     }}
                   >
-                    <option value="none">◼️ 无圆角</option>
-                    <option value="sm">🔹 小圆角</option>
-                    <option value="default">🔸 默认</option>
-                    <option value="lg">🔶 大圆角</option>
-                    <option value="full">⭕ 全圆角</option>
+                    <option value="none">◼️ None</option>
+                    <option value="sm">🔹 Small</option>
+                    <option value="default">🔸 Default</option>
+                    <option value="lg">🔶 Large</option>
+                    <option value="full">⭕ Full</option>
                   </select>
                 </div>
 
@@ -837,7 +831,7 @@ const DemoApp: React.FC = () => {
                       marginBottom: "4px",
                     }}
                   >
-                    阴影效果
+                    Shadow
                   </label>
                   <select
                     value={shadow}
@@ -849,10 +843,10 @@ const DemoApp: React.FC = () => {
                       borderRadius: "4px",
                     }}
                   >
-                    <option value="default">🌅 默认</option>
-                    <option value="none">🌆 无阴影</option>
-                    <option value="inner">🌇 内阴影</option>
-                    <option value="outline">🌄 轮廓阴影</option>
+                    <option value="default">🌅 Default</option>
+                    <option value="none">🌆 None</option>
+                    <option value="inner">🌇 Inner</option>
+                    <option value="outline">🌄 Outline</option>
                   </select>
                 </div>
 
@@ -866,7 +860,7 @@ const DemoApp: React.FC = () => {
                       marginBottom: "4px",
                     }}
                   >
-                    悬停效果
+                    Hover
                   </label>
                   <select
                     value={hoverEffect}
@@ -878,11 +872,11 @@ const DemoApp: React.FC = () => {
                       borderRadius: "4px",
                     }}
                   >
-                    <option value="none">🚫 无效果</option>
+                    <option value="none">🚫 None</option>
                     <option value="scale">🔍 缩放</option>
-                    <option value="slide">➡️ 滑动</option>
-                    <option value="glow">✨ 发光</option>
-                    <option value="fade">🌫️ 淡入淡出</option>
+                    <option value="slide">➡️ Slide</option>
+                    <option value="glow">✨ Glow</option>
+                    <option value="fade">🌫️ Fade</option>
                   </select>
                 </div>
 
@@ -929,7 +923,7 @@ const DemoApp: React.FC = () => {
                     checked={animation}
                     onChange={(e) => setAnimation(e.target.checked)}
                   />
-                  ✨ 启用基础动画效果 (上移、按钮缩放)
+                  ✨ Enable Basic Animation Effect (Move up, Button Scale)
                 </label>
 
                 <label
@@ -946,7 +940,7 @@ const DemoApp: React.FC = () => {
                     checked={gradient}
                     onChange={(e) => setGradient(e.target.checked)}
                   />
-                  🌈 启用渐变背景
+                  🌈 Enable Gradient Background
                 </label>
               </div>
             </div>
@@ -956,11 +950,11 @@ const DemoApp: React.FC = () => {
             style={{ marginTop: "16px", fontSize: "14px", color: "#64748b" }}
           >
             <p>
-              • <strong>LocalStorage模式</strong>: 数据保存在浏览器本地存储中
+              • <strong>LocalStorage Mode</strong>: Data is stored in the browser's local storage
             </p>
             <p>
-              • <strong>API模式</strong>:
-              模拟通过API保存数据（实际上也是存储在LocalStorage，但模拟了网络请求）
+              • <strong>API Mode</strong>:
+              Simulate saving data through API (actually stored in LocalStorage, but simulated network requests)
             </p>
           </div>
         </div>
@@ -976,7 +970,7 @@ const DemoApp: React.FC = () => {
           }}
         >
           <h3 style={{ color: "#1e293b", marginTop: 0, marginBottom: "16px" }}>
-            当前状态
+            Current State
           </h3>
 
           <div
@@ -987,7 +981,7 @@ const DemoApp: React.FC = () => {
             }}
           >
             <div>
-              <strong style={{ color: "#374151" }}>选中的模型ID:</strong>
+              <strong style={{ color: "#374151" }}>Selected Model ID:</strong>
               <div
                 style={{
                   color: "#059669",
@@ -995,12 +989,12 @@ const DemoApp: React.FC = () => {
                   marginTop: "4px",
                 }}
               >
-                {selectedModelId || "(未选择)"}
+                {selectedModelId || "(unselected)"}
               </div>
             </div>
 
             <div>
-              <strong style={{ color: "#374151" }}>配置数量:</strong>
+              <strong style={{ color: "#374151" }}>Configuration Count:</strong>
               <div
                 style={{
                   color: "#059669",
@@ -1008,7 +1002,7 @@ const DemoApp: React.FC = () => {
                   marginTop: "4px",
                 }}
               >
-                {configs.length} 个配置
+                {configs.length} configurations
               </div>
             </div>
           </div>
@@ -1018,7 +1012,7 @@ const DemoApp: React.FC = () => {
               <summary
                 style={{ cursor: "pointer", color: "#6366f1", fontWeight: 500 }}
               >
-                查看所有配置 (JSON)
+                View All Configurations (JSON)
               </summary>
               <pre
                 style={{
@@ -1049,7 +1043,7 @@ const DemoApp: React.FC = () => {
           }}
         >
           <h3 style={{ color: "#000", marginTop: 0, marginBottom: "16px" }}>
-            🌖 亮色主题演示
+            🌖 Light Theme Demo
           </h3>
           <div
             style={{
@@ -1062,7 +1056,7 @@ const DemoApp: React.FC = () => {
             {/* 下拉选择模式（默认） */}
             <div>
               <h4 style={{ color: "#1e293b", marginBottom: "16px" }}>
-                ✨ 下拉选择模式 (默认)
+                ✨ Dropdown Mode (Default)
               </h4>
               <div
                 className={`ai-model-manager ${getCustomClassName()}`}
@@ -1076,13 +1070,13 @@ const DemoApp: React.FC = () => {
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
                   supportedProviders={providerList}
-                  placeholder="选择一个AI模型..."
+                  placeholder="Select an AI model..."
                   customClassName={getCustomClassName()}
                   manager={getGlobalAIModelManager(storageConfig)}
                 />
 
                 <h4 style={{ color: "#1e293b", margin: "30px 0 16px 0" }}>
-                  ✨ 自定义 Label (只显示配置名称)
+                  ✨ Custom Label
                 </h4>
 
                 <AIModelSelect
@@ -1093,18 +1087,37 @@ const DemoApp: React.FC = () => {
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
                   supportedProviders={providerList}
-                  placeholder="选择一个AI模型..."
+                  placeholder="Select an AI model..."
                   customClassName={getCustomClassName()}
                   manager={getGlobalAIModelManager(storageConfig)}
                   formatLabel={(config) => config.name} // 只显示配置名称
                 />
+
+                <h4 style={{ color: "#1e293b", margin: "30px 0 16px 0" }}>
+                   📚 i18n
+                </h4>
+
+                <AIModelSelect
+                  mode="select"
+                  theme="light"
+                  selectedModelId={selectedModelId}
+                  onModelChange={handleModelChange}
+                  onConfigChange={handleConfigChange}
+                  storage={storageConfig}
+                  supportedProviders={providerList}
+                  locale="zh"
+                  placeholder="请选择一个AI模型..."
+                  customClassName={getCustomClassName()}
+                  manager={getGlobalAIModelManager(storageConfig)}
+                />
+
               </div>
             </div>
 
             {/* 列表模式 */}
             <div>
               <h4 style={{ color: "#1e293b", marginBottom: "16px" }}>
-                ✨ 列表模式
+                ✨ List Mode
               </h4>
               <div
                 className={`ai-model-manager ${getCustomClassName()}`}
@@ -1118,7 +1131,7 @@ const DemoApp: React.FC = () => {
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
                   supportedProviders={providerList}
-                  addButtonText="➕ 添加AI模型"
+                  addButtonText="➕ Add AI Model"
                   allowDelete={true}
                   style={{
                     minWidth: "100%",
@@ -1143,7 +1156,7 @@ const DemoApp: React.FC = () => {
           }}
         >
           <h3 style={{ color: "#f9fafb", marginTop: 0, marginBottom: "16px" }}>
-            🌙 暗色主题演示
+            🌙 Dark Theme Demo
           </h3>
 
           <div
@@ -1157,7 +1170,7 @@ const DemoApp: React.FC = () => {
             {/* 暗色主题下拉选择模式 */}
             <div>
               <h4 style={{ color: "#f9fafb", marginBottom: "12px" }}>
-                ✨ 下拉选择模式
+                ✨ Dropdown Mode
               </h4>
               <div
                 className={`ai-model-manager ${getCustomClassName()}`}
@@ -1171,7 +1184,51 @@ const DemoApp: React.FC = () => {
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
                   supportedProviders={providerList}
-                  placeholder="选择一个AI模型..."
+                  placeholder="Select an AI model..."
+                  customClassName={getCustomClassName()}
+                  manager={getGlobalAIModelManager(storageConfig)}
+                />
+              </div>
+
+              <h4 style={{ color: "#f9fafb", margin: "16px 0 10px 0", fontSize: "14px" }}>
+                30% width
+              </h4>
+              <div
+                className={`ai-model-manager ${getCustomClassName()}`}
+                onClick={() => setThemeMode("dark")}
+              >
+                <AIModelSelect
+                  mode="select"
+                  theme="dark"
+                  width="30%"
+                  selectedModelId={selectedModelId}
+                  onModelChange={handleModelChange}
+                  onConfigChange={handleConfigChange}
+                  storage={storageConfig}
+                  supportedProviders={providerList}
+                  placeholder="Select an AI model..."
+                  customClassName={getCustomClassName()}
+                  manager={getGlobalAIModelManager(storageConfig)}
+                />
+              </div>
+
+              <h4 style={{ color: "#f9fafb", margin: "16px 0 10px 0", fontSize: "14px" }}>
+                80px width
+              </h4>
+              <div
+                className={`ai-model-manager ${getCustomClassName()}`}
+                onClick={() => setThemeMode("dark")}
+              >
+                <AIModelSelect
+                  mode="select"
+                  theme="dark"
+                  width="80px"
+                  selectedModelId={selectedModelId}
+                  onModelChange={handleModelChange}
+                  onConfigChange={handleConfigChange}
+                  storage={storageConfig}
+                  supportedProviders={providerList}
+                  placeholder="Select an AI model..."
                   customClassName={getCustomClassName()}
                   manager={getGlobalAIModelManager(storageConfig)}
                 />
@@ -1181,7 +1238,7 @@ const DemoApp: React.FC = () => {
             {/* 暗色主题列表模式 */}
             <div>
               <h4 style={{ color: "#f9fafb", marginBottom: "12px" }}>
-                ✨ 列表模式
+                ✨ List Mode
               </h4>
               <div
                 className={`ai-model-manager hover-scale animated ${getCustomClassName()}`}
@@ -1195,7 +1252,7 @@ const DemoApp: React.FC = () => {
                   onConfigChange={handleConfigChange}
                   storage={storageConfig}
                   supportedProviders={providerList}
-                  addButtonText="➕ 添加AI模型"
+                  addButtonText="➕ Add AI Model"
                   allowDelete={true}
                   customClassName={getCustomClassName()}
                   manager={getGlobalAIModelManager(storageConfig)}
@@ -1214,12 +1271,12 @@ const DemoApp: React.FC = () => {
             }}
           >
             <p style={{ margin: "0 0 8px 0", color: "#9ca3af" }}>
-              <strong>✨ 暗色主题特性：</strong>
+              <strong>✨ Dark Theme Features:</strong>
             </p>
             <ul style={{ margin: 0, paddingLeft: "16px", color: "#9ca3af" }}>
-              <li>优化的暗色系配色方案，提供更好的夜间使用体验</li>
-              <li>支持三种主题模式：light、dark、system(自动适应)</li>
-              <li>右侧列表启用了缩放悬停效果和基础动画</li>
+              <li>Optimized dark color scheme, providing better nighttime experience</li>
+              <li>Supports three theme modes: light, dark, system(automatic adaptation)</li>
+              <li>Right list enabled hover effect and basic animation</li>
             </ul>
           </div>
         </div>
@@ -1235,39 +1292,39 @@ const DemoApp: React.FC = () => {
           }}
         >
           <h3 style={{ color: "#92400e", marginTop: 0, marginBottom: "16px" }}>
-            💡 使用提示
+            💡 Usage Tips
           </h3>
           <ul style={{ color: "#92400e", paddingLeft: "20px", margin: 0 }}>
             <li>
-              <strong>下拉选择模式</strong>：类似 HTML
-              select，适合紧凑的界面布局
+              <strong>Dropdown Mode</strong>: Similar to HTML
+              select，Suitable for compact interface layout
             </li>
             <li>
-              <strong>列表模式</strong>
-              ：显示详细信息，适合需要显示模型状态和操作的场景
+              <strong>List Mode</strong>
+              : Display detailed information, suitable for scenarios that need to display model status and operations
             </li>
             <li>
-              <strong>数据同步</strong>
-              ：两种模式使用相同的存储配置，数据完全同步
+              <strong>Data Synchronization</strong>
+              : Both modes use the same storage configuration, data is fully synchronized
             </li>
-            <li>点击"添加AI模型"或"⚙️"按钮可以打开配置弹窗</li>
-            <li>在弹窗中选择不同的AI提供商会显示不同的配置选项</li>
+            <li>Click "Add AI Model" or "⚙️" button can open the configuration popup</li>
+            <li>Different configuration options will be displayed in the popup by selecting different AI providers</li>
             <li>
-              在列表模式中点击模型右侧的"⋮"按钮可以进行编辑、启用/禁用、删除操作
+              In the list mode, click the "⋮" button on the model on the right can edit, enable/disable, delete operations
             </li>
-            <li>所有配置会根据选择的存储方式进行保存</li>
-            <li>组件支持自定义样式覆盖（通过CSS变量或className）</li>
+            <li>All configurations will be saved according to the selected storage method</li>
+            <li>Component supports custom style override (through CSS variables or className)</li>
             <li>
-              <strong>自定义 Label 格式化</strong>：通过{" "}
-              <code>formatLabel</code> 属性可以自定义下拉选择器中选项的显示格式
-            </li>
-            <li>
-              <strong>基础动画效果</strong>
-              ：控制基本的悬停动画（列表项上移、按钮缩放等）
+              <strong>Custom Label Formatting</strong>: Through{" "}
+              <code>formatLabel</code> Property can customize the display format of options in the dropdown selector
             </li>
             <li>
-              <strong>悬停效果</strong>
-              ：在基础动画之上，添加特定的悬停风格（缩放、滑动、发光、淡入淡出）
+              <strong>Basic Animation Effect</strong>
+              : Control basic hover animation (list item move up, button scale, etc.)
+            </li>
+            <li>
+              <strong>Hover Effect</strong>
+              : On the basis of basic animation, add specific hover style (scale, slide, glow, fade)
             </li>
           </ul>
         </div>

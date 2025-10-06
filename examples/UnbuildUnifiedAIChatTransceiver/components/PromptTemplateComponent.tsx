@@ -1,5 +1,6 @@
 import React from 'react';
 import { promptTemplates, PromptTemplateProcessor } from './PromptTemplateConfig';
+import { Select } from 'antd';
 
 interface PromptTemplateComponentProps {
   selectedTemplate: string;
@@ -16,32 +17,33 @@ export const PromptTemplateComponent: React.FC<PromptTemplateComponentProps> = (
 }) => {
   return (
     <div className="sidebar-section">
-      <h3>🎭 开发用提示词追加</h3>
+      <h3>🎭 Prompt Template</h3>
       <div className="prompt-templates">
         <div className="template-selector">
-          <select
-            value={selectedTemplate}
-            onChange={(e) => {
-              onTemplateChange(e.target.value);
-              if (e.target.value !== 'custom') {
-                const template = promptTemplates.find(t => t.id === e.target.value);
+          <Select
+            value={selectedTemplate || undefined}
+            onChange={(value) => {
+              onTemplateChange(value || '');
+              if (value !== 'custom') {
+                const template = promptTemplates.find(t => t.id === value);
                 onCustomPromptChange(template?.prompt || '');
               }
             }}
-            className="template-select"
+            placeholder="Not using template"
+            style={{ width: '100%' }}
+            allowClear
           >
-            <option value="">不使用模板</option>
             {promptTemplates.map(template => (
-              <option key={template.id} value={template.id}>
+              <Select.Option key={template.id} value={template.id}>
                 {template.name} - {template.description}
-              </option>
+              </Select.Option>
             ))}
-          </select>
+          </Select>
         </div>
         
         {selectedTemplate === 'custom' && (
           <div className="custom-prompt">
-            <label>自定义提示词:</label>
+            <label>Custom Prompt:</label>
             <textarea
               value={customPrompt}
               onChange={(e) => onCustomPromptChange(e.target.value)}
@@ -55,7 +57,7 @@ export const PromptTemplateComponent: React.FC<PromptTemplateComponentProps> = (
         {selectedTemplate && (
           <div className="template-preview">
             <small>
-              <strong>当前模板:</strong> {promptTemplates.find(t => t.id === selectedTemplate)?.name}
+              <strong>Current Template:</strong> {promptTemplates.find(t => t.id === selectedTemplate)?.name}
             </small>
             <div className="template-content">
               {PromptTemplateProcessor.getPromptContent(selectedTemplate, customPrompt)}

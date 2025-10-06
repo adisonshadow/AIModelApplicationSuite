@@ -1,36 +1,43 @@
 import { AIProvider, AIProviderMeta } from '../types';
 
 // 预定义的AI提供商配置
-export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
+export const getDefaultProviders = (locale: 'en' | 'zh' = 'en'): AIProviderMeta[] => {
+  return [
   {
     id: AIProvider.OPENAI,
     name: 'OpenAI',
     description: 'OpenAI GPT models (GPT-4, GPT-3.5, etc.)',
-    npmPackage: '@ai-sdk/openai',
+    npmPackage: 'openai (default)',
     requiresApiKey: true,
     defaultBaseURL: 'https://api.openai.com/v1',
-    models: [
-      'gpt-4-turbo',
-      'gpt-4',
-      'gpt-3.5-turbo',
-      'gpt-3.5-turbo-16k',
-      'text-davinci-003'
-    ],
     configFields: [
       {
         key: 'apiKey',
         label: 'API Key',
         type: 'password',
         required: true,
-        placeholder: ''
+        placeholder: 'sk-...'
+      },
+      {
+        key: 'model',
+        label: locale === 'zh' ? 'AI模型' : 'Model',
+        type: 'autocomplete',
+        required: true,
+        placeholder: locale === 'zh' ? '输入或选择AI模型，如：gpt-4' : 'Enter or select AI model, e.g.: gpt-4',
+        suggestions: [
+          'gpt-4-turbo',
+          'gpt-4',
+          'gpt-3.5-turbo',
+          'gpt-3.5-turbo-16k'
+        ]
       }
     ]
   },
   {
     id: AIProvider.OPENAILIKE,
-    name: '基于OpenAI协议的AI模型',
+    name: locale === 'zh' ? '兼容OpenAI协议的AI模型' : 'OpenAI Compatible',
     description: 'OpenAI GPT models (GPT-4, GPT-3.5, etc.)',
-    npmPackage: '@ai-sdk/openai',
+    npmPackage: 'openai (default)',
     requiresApiKey: true,
     defaultBaseURL: '',
     models: [],
@@ -49,6 +56,14 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
         required: true,
         placeholder: 'https://',
         defaultValue: ''
+      },
+      {
+        key: 'model',
+        label: locale === 'zh' ? 'AI模型' : 'Model',
+        type: 'autocomplete',
+        required: true,
+        placeholder: locale === 'zh' ? '输入或选择AI模型' : 'Enter or select AI model',
+        suggestions: []
       }
     ]
   },
@@ -56,13 +71,9 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
     id: AIProvider.DEEPSEEK,
     name: 'DeepSeek',
     description: 'DeepSeek AI models',
-    npmPackage: '@ai-sdk/deepseek',
+    npmPackage: 'openai (default)',
     requiresApiKey: true,
     defaultBaseURL: 'https://api.deepseek.com/v1',
-    models: [
-      'deepseek-chat',
-      'deepseek-coder'
-    ],
     configFields: [
       {
         key: 'apiKey',
@@ -70,6 +81,19 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
         type: 'password',
         required: true,
         placeholder: 'sk-...'
+      },
+      {
+        key: 'model',
+        label: locale === 'zh' ? 'AI模型' : 'Model',
+        type: 'autocomplete',
+        required: true,
+        placeholder: locale === 'zh' ? '输入或选择AI模型' : 'Enter or select AI model',
+        suggestions: [
+          'deepseek-chat',
+          'deepseek-coder',
+          'deepseek-v3',
+          'deepseek-r1'
+        ]
       }
     ]
   },
@@ -77,16 +101,9 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
     id: AIProvider.ANTHROPIC,
     name: 'Anthropic',
     description: 'Anthropic Claude models',
-    npmPackage: '@ai-sdk/anthropic',
+    npmPackage: '- (no implementation planned, not developer-friendly)',
     requiresApiKey: true,
     defaultBaseURL: 'https://api.anthropic.com',
-    models: [
-      'claude-3-opus-20240229',
-      'claude-3-sonnet-20240229',
-      'claude-3-haiku-20240307',
-      'claude-2.1',
-      'claude-2.0'
-    ],
     configFields: [
       {
         key: 'apiKey',
@@ -94,22 +111,30 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
         type: 'password',
         required: true,
         placeholder: 'sk-ant-...'
+      },
+      {
+        key: 'model',
+        label: locale === 'zh' ? 'AI模型' : 'Model',
+        type: 'autocomplete',
+        required: true,
+        placeholder: locale === 'zh' ? '输入或选择AI模型' : 'Enter or select AI model',
+        suggestions: [
+          'claude-3-opus-20240229',
+          'claude-3-sonnet-20240229',
+          'claude-3-haiku-20240307',
+          'claude-2.1',
+          'claude-2.0'
+        ]
       }
     ]
   },
   {
     id: AIProvider.GOOGLE,
     name: 'Google Gemini',
-    description: 'Google Gemini models',
-    npmPackage: '@ai-sdk/google',
+    description: 'Google Gemini models (Gemini Pro, Gemini 1.5, etc.)',
+    npmPackage: '@google/genai',
     requiresApiKey: true,
     defaultBaseURL: 'https://generativelanguage.googleapis.com/v1beta',
-    models: [
-      'gemini-pro',
-      'gemini-pro-vision',
-      'gemini-1.5-pro',
-      'gemini-1.5-flash'
-    ],
     configFields: [
       {
         key: 'apiKey',
@@ -117,53 +142,20 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
         type: 'password',
         required: true,
         placeholder: 'AIza...'
-      }
-    ]
-  },
-  {
-    id: AIProvider.MISTRAL,
-    name: 'Mistral AI',
-    description: 'Mistral AI models',
-    npmPackage: '@ai-sdk/mistral',
-    requiresApiKey: true,
-    defaultBaseURL: 'https://api.mistral.ai/v1',
-    models: [
-      'mistral-large-latest',
-      'mistral-medium-latest',
-      'mistral-small-latest',
-      'open-mistral-7b',
-      'open-mixtral-8x7b'
-    ],
-    configFields: [
+      },
       {
-        key: 'apiKey',
-        label: 'API Key',
-        type: 'password',
+        key: 'model',
+        label: locale === 'zh' ? 'AI模型' : 'Model',
+        type: 'autocomplete',
         required: true,
-        placeholder: 'sk-...'
-      }
-    ]
-  },
-  {
-    id: AIProvider.COHERE,
-    name: 'Cohere',
-    description: 'Cohere AI models',
-    npmPackage: '@ai-sdk/cohere',
-    requiresApiKey: true,
-    defaultBaseURL: 'https://api.cohere.ai/v1',
-    models: [
-      'command-r-plus',
-      'command-r',
-      'command',
-      'command-nightly'
-    ],
-    configFields: [
-      {
-        key: 'apiKey',
-        label: 'API Key',
-        type: 'password',
-        required: true,
-        placeholder: 'co_...'
+        placeholder: locale === 'zh' ? '输入或选择AI模型，如：gemini-pro' : 'Enter or select AI model, e.g.: gemini-pro',
+        suggestions: [
+          'gemini-2.0-flash-exp',
+          'gemini-1.5-pro',
+          'gemini-1.5-flash',
+          'gemini-pro',
+          'gemini-pro-vision'
+        ]
       }
     ]
   },
@@ -171,7 +163,7 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
     id: AIProvider.AZURE,
     name: 'Azure OpenAI',
     description: 'Azure OpenAI Service',
-    npmPackage: '@ai-sdk/azure',
+    npmPackage: 'openai (default)',
     requiresApiKey: true,
     configFields: [
       {
@@ -213,16 +205,9 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
     id: AIProvider.OLLAMA,
     name: 'Ollama',
     description: 'Local Ollama models',
-    npmPackage: 'ollama',
+    npmPackage: 'openai (default)',
     requiresApiKey: false,
     defaultBaseURL: 'http://localhost:11434',
-    models: [
-      'llama2',
-      'codellama',
-      'mistral',
-      'phi',
-      'gemma'
-    ],
     configFields: [
       {
         key: 'baseURL',
@@ -236,18 +221,11 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
   },
   {
     id: AIProvider.VOLCENGINE,
-    name: 'Volcengine火山引擎',
+    name: locale === 'zh' ? 'Volcengine火山引擎' : 'Volcengine',
     description: 'Volcengine AI models (OpenAI compatible)',
-    npmPackage: '@ai-sdk/openai',
+    npmPackage: 'Built-in implementation',
     requiresApiKey: true,
     defaultBaseURL: 'https://ark.cn-beijing.volces.com/api/v3',
-    models: [
-      'gpt-4',
-      'gpt-3.5-turbo',
-      'gpt-3.5-turbo-16k',
-      'gpt-4-turbo',
-      'gpt-4-turbo-preview'
-    ],
     configFields: [
       {
         key: 'apiKey',
@@ -258,34 +236,79 @@ export const DEFAULT_PROVIDERS: AIProviderMeta[] = [
       },
       {
         key: 'model',
-        label: 'AI模型',
+        label: locale === 'zh' ? 'AI模型' : 'Model',
         type: 'autocomplete',
         required: true,
-        placeholder: '输入或选择AI模型，如：gpt-4',
+        placeholder: locale === 'zh' ? '输入或选择AI模型，如：gpt-4' : 'Enter or select AI model, e.g.: gpt-4',
         suggestions: [
-          'gpt-4',
-          'gpt-3.5-turbo',
-          'gpt-3.5-turbo-16k',
-          'gpt-4-turbo',
-          'gpt-4-turbo-preview'
+          'doubao-seed-1-6-250615',
+          'doubao-seed-1-6-thinking-250715',
+          'doubao-seed-1-6-flash-250828',
+          'deepseek-v3-1-terminus',
+          'deepseek-r1-250528',
+          'kimi-k2-250905',
+          'doubao-seed-translation-250915', // Translation
+          'doubao-1-5-pro-32k-250115'
+        ]
+      }
+    ]
+  },
+  {
+    id: AIProvider.ALIYUN_BAILIAN,
+    name: locale === 'zh' ? '阿里云百炼' : 'Aliyun Bailian',
+    description: locale === 'zh' ? '阿里云百炼 AI models (OpenAI compatible)' : 'Aliyun Bailian AI models (OpenAI compatible)',
+    npmPackage: 'Built-in implementation',
+    requiresApiKey: true,
+    defaultBaseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    configFields: [
+      {
+        key: 'apiKey',
+        label: 'API Key',
+        type: 'password',
+        required: true,
+        placeholder: ''
+      },
+      {
+        key: 'model',
+        label: locale === 'zh' ? 'AI模型' : 'Model',
+        type: 'autocomplete',
+        required: true,
+        placeholder: locale === 'zh' ? '输入或选择AI模型' : 'Enter or select AI model',
+        suggestions: [
+          'qwen3-max',
+          'deepseek-v3.2-exp',
+          'qwen-plus-32k-latest',
+          'qwen-turbo-latest',
+          'qwen-turbo-32k-latest',
+          'qwen-plus-14b-latest',
+          'qwen-plus-14b-32k-latest',
+          'qwen-turbo-14b-latest',
+          'qwen-turbo-14b-32k-latest',
+          'deepseek-v3-1',
+          'deepseek-r1',
+          'Moonshot-Kimi-K2-Instruct'
         ]
       }
     ]
   }
-];
+  ];
+};
+
+// 向后兼容的默认提供商配置
+export const DEFAULT_PROVIDERS: AIProviderMeta[] = getDefaultProviders();
 
 // 根据提供商ID获取元数据
-export function getProviderMeta(providerId: AIProvider): AIProviderMeta | undefined {
-  return DEFAULT_PROVIDERS.find(p => p.id === providerId);
+export function getProviderMeta(providerId: AIProvider, locale: 'en' | 'zh' = 'en'): AIProviderMeta | undefined {
+  return getDefaultProviders(locale).find(p => p.id === providerId);
 }
 
 // 获取所有支持的提供商
-export function getAllProviders(): AIProviderMeta[] {
-  return DEFAULT_PROVIDERS;
+export function getAllProviders(locale: 'en' | 'zh' = 'en'): AIProviderMeta[] {
+  return getDefaultProviders(locale);
 }
 
 // 验证提供商配置
-export function validateProviderConfig(provider: AIProviderMeta, config: Record<string, any>): { valid: boolean; errors: string[] } {
+export function validateProviderConfig(provider: AIProviderMeta, config: Record<string, any>, locale: 'en' | 'zh' = 'en'): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   
   if (!provider.configFields) {
@@ -294,14 +317,14 @@ export function validateProviderConfig(provider: AIProviderMeta, config: Record<
   
   for (const field of provider.configFields) {
     if (field.required && (!config[field.key] || config[field.key].toString().trim() === '')) {
-      errors.push(`${field.label}是必填项`);
+      errors.push(locale === 'zh' ? `${field.label}是必填项` : `${field.label} is required`);
     }
     
     if (field.type === 'url' && config[field.key]) {
       try {
         new URL(config[field.key]);
       } catch {
-        errors.push(`${field.label}必须是有效的URL格式`);
+        errors.push(locale === 'zh' ? `${field.label}必须是有效的URL格式` : `${field.label} must be a valid URL`);
       }
     }
   }

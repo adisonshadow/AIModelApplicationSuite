@@ -36,32 +36,6 @@ const mockAPI = {
         }
       },
       {
-        id: 'demo-2',
-        name: 'DeepSeek Demo',
-        provider: AIProvider.DEEPSEEK,
-        enabled: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        config: {
-          apiKey: 'sk-demo-deepseek-key',
-          baseURL: 'https://api.deepseek.com/v1',
-          model: 'deepseek-v3-1-250821'
-        }
-      },
-      {
-        id: 'demo-3',
-        name: 'Anthropic Demo',
-        provider: AIProvider.ANTHROPIC,
-        enabled: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        config: {
-          apiKey: 'sk-ant-demo-key',
-          baseURL: 'https://api.anthropic.com',
-          model: 'claude-3-sonnet-20240229'
-        }
-      },
-      {
         id: 'demo-4',
         name: 'Volcengine Demo',
         provider: AIProvider.VOLCENGINE,
@@ -375,10 +349,10 @@ const DemoApp: React.FC = () => {
         padding: '20px'
       }}>
       <h1 style={{ color: '#1e293b', marginBottom: '8px' }}>
-        React AI Model Selector/Manager 🚚 演示
+        React AI Model Selector/Manager 🚚
       </h1>
       <p style={{ color: '#64748b', marginBottom: '32px' }}>
-        这是一个用于AI模型配置和选择的React组件包演示页面
+      This is a demo page for a React component package used for AI model configuration and selection
         <Link 
               to="/unbuild-selector" 
             >
@@ -734,7 +708,6 @@ const DemoApp: React.FC = () => {
                     AIProvider.ANTHROPIC,
                     AIProvider.GOOGLE,
                     AIProvider.OLLAMA,
-                    AIProvider.MISTRAL,
                     AIProvider.VOLCENGINE
                   ]}
                   addButtonText="➕ 添加AI模型"
@@ -811,7 +784,6 @@ const DemoApp: React.FC = () => {
                   AIProvider.ANTHROPIC,
                   AIProvider.GOOGLE,
                   AIProvider.OLLAMA,
-                  AIProvider.MISTRAL,
                   AIProvider.VOLCENGINE
                 ]}
                 addButtonText="➕ 添加AI模型"
@@ -877,7 +849,6 @@ const DemoApp: React.FC = () => {
           AIProvider.ANTHROPIC,
           AIProvider.GOOGLE,
           AIProvider.OLLAMA,
-          AIProvider.MISTRAL,
           AIProvider.VOLCENGINE
         ]}
         customClassName={getCustomClassName()}

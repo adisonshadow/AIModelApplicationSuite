@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AIModelSelectProps, AIModelConfig, AIProvider, AIProviderMeta } from '../types';
-import { AIModelManager as Manager } from '../utils/manager';
+import { getGlobalAIModelManager } from '../utils/GlobalAIModelManager';
 import { getProviderMeta } from '../utils/providers';
+import { getMessages } from '../utils/i18n';
 import AIModelConfModal from './AIModelConfModal';
 import AIModelManager from './AIModelManager';
 import '../styles/index.css';
@@ -12,6 +13,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   onModelChange,
   onConfigChange,
   theme = 'system',
+  locale = 'en',
   className = '',
   customClassName = '', // 新增：接收自定义样式类名
   style,
@@ -20,17 +22,20 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
     AIProvider.OPENAI,
     AIProvider.DEEPSEEK,
     AIProvider.ANTHROPIC,
-    AIProvider.GOOGLE,
-    AIProvider.MISTRAL
+    AIProvider.GOOGLE
   ],
   customProviders = [],
   showAddButton = true,
-  addButtonText = '添加AI模型',
+  addButtonText,
   allowDelete = true,
-  placeholder = '请选择AI模型',
+  placeholder,
   formatLabel,
-  manager
+  manager,
+  width,
+  block = false
 }) => {
+  // 获取国际化消息
+  const messages = getMessages(locale);
   // 状态管理
   const [configs, setConfigs] = useState<AIModelConfig[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +43,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [showManager, setShowManager] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModelConfig | undefined>();
-  const [modelManager] = useState(() => manager || new Manager(storage));
+  const [modelManager] = useState(() => manager || getGlobalAIModelManager(storage));
   
   // 跟踪打开的菜单
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -50,7 +55,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
     
     // 添加默认支持的提供商
     supportedProviders.forEach(providerId => {
-      const meta = getProviderMeta(providerId);
+      const meta = getProviderMeta(providerId, locale);
       if (meta) {
         providers.push(meta);
       }
@@ -77,7 +82,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
         onConfigChange?.(loadedConfigs);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载配置失败');
+      setError(err instanceof Error ? err.message : 'Failed to load configs');
     } finally {
       setLoading(false);
     }
@@ -91,11 +96,8 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
     } else {
       // 传入 manager 时，直接获取当前配置
       const currentConfigs = modelManager.getConfigs();
-      if (currentConfigs.length > 0) {
-        setConfigs(currentConfigs);
-        setLoading(false);
-      }
-      // 如果配置为空，等待监听器通知
+      setConfigs(currentConfigs);
+      setLoading(false); // 无论配置是否为空，都设置 loading 为 false
     }
   }, [loadConfigs, manager, modelManager]);
 
@@ -188,23 +190,23 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
 
   // 处理删除模型
   const handleDeleteModel = useCallback(async (modelId: string) => {
-    if (!confirm('确认删除此AI模型配置吗？')) {
+    if (!confirm(messages.confirmDeleteMessage)) {
       return;
     }
     
     try {
       await modelManager.deleteConfig(modelId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '删除配置失败');
+      setError(err instanceof Error ? err.message : 'Failed to delete config');
     }
-  }, [modelManager]);
+  }, [modelManager, messages]);
 
   // 处理启用/禁用模型
   const handleToggleModel = useCallback(async (modelId: string, enabled: boolean) => {
     try {
       await modelManager.updateConfig(modelId, { enabled });
     } catch (err) {
-      setError(err instanceof Error ? err.message : '更新配置失败');
+      setError(err instanceof Error ? err.message : 'Failed to update config');
     }
   }, [modelManager]);
 
@@ -215,7 +217,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
       setShowModal(false);
       setEditingModel(undefined);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存配置失败');
+      setError(err instanceof Error ? err.message : 'Failed to save config');
     }
   }, [modelManager]);
 
@@ -268,6 +270,68 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
     return classes.join(' ');
   }, [theme, customClassName]);
 
+  // 计算最终的样式（包含宽度设置）
+  const getFinalStyle = useCallback((): React.CSSProperties => {
+    const finalStyle: React.CSSProperties = { ...style };
+    
+    // 如果设置了 block，宽度设置为 100%
+    if (block) {
+      finalStyle.width = '100%';
+      finalStyle.display = 'block';
+    } 
+    // 否则，如果设置了 width，使用指定的宽度
+    else if (width !== undefined) {
+      finalStyle.width = typeof width === 'number' ? `${width}px` : width;
+      finalStyle.display = 'inline-block'; // 关键：让宽度生效
+    }
+    // 如果没有设置宽度，使用默认的 min-width
+    else {
+      finalStyle.minWidth = '200px';
+      finalStyle.display = 'inline-block';
+    }
+    
+    return finalStyle;
+  }, [style, width, block]);
+
+  // 计算 select 元素的样式
+  const getSelectStyle = useCallback((): React.CSSProperties => {
+    const selectStyle: React.CSSProperties = {
+      boxSizing: 'border-box',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    };
+    
+    // 如果设置了 block，宽度设置为 100%
+    if (block) {
+      selectStyle.width = '100%';
+      selectStyle.minWidth = 0;
+      selectStyle.maxWidth = '100%';
+    } 
+    // 如果设置了 width
+    else if (width !== undefined) {
+      // 如果是百分比，select 设置为 100%（占满外层容器）
+      if (typeof width === 'string' && width.includes('%')) {
+        selectStyle.width = '100%';
+        selectStyle.minWidth = 0;
+        selectStyle.maxWidth = '100%';
+      } 
+      // 如果是像素值，直接使用
+      else {
+        const widthValue = typeof width === 'number' ? `${width}px` : width;
+        selectStyle.width = widthValue;
+        selectStyle.minWidth = 0;
+        selectStyle.maxWidth = widthValue;
+      }
+    }
+    // 如果没有设置宽度，使用默认的 min-width
+    else {
+      selectStyle.minWidth = '200px';
+    }
+    
+    return selectStyle;
+  }, [width, block]);
+
   // 渲染下拉选择模式
   const renderSelectMode = useCallback(() => {
     const enabledConfigs = configs.filter(config => config.enabled);
@@ -282,7 +346,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
     };
     
     return (
-      <div className={`${getThemeClassName()} ai-model-select-dropdown ${className}`} style={style}>
+      <div className={`${getThemeClassName()} ai-model-select-dropdown ${className}`} style={getFinalStyle()}>
         {/* 错误提示 */}
         {error && (
           <div className="ai-error-message" style={{ padding: '12px 16px', background: 'rgba(239, 68, 68, 0.1)', marginBottom: '8px' }}>
@@ -291,15 +355,16 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
         )}
         
         {/* 下拉选择器 */}
-        <div className="ai-select-container">
+        <div className="ai-select-container" style={{ width: '100%' }}>
           <select
             className="ai-select"
             value={currentSelectedId || ''}
             onChange={(e) => handleSelectChange(e.target.value)}
             disabled={loading}
+            style={getSelectStyle()}
           >
             <option value="" disabled>
-              {loading ? '加载中...' : (enabledConfigs.length === 0 ? '暂无可用模型' : placeholder)}
+              {loading ? 'Loading...' : (enabledConfigs.length === 0 ? messages.noModelsAvailable : (placeholder || messages.selectPlaceholder))}
             </option>
             {enabledConfigs.map((config) => (
               <option key={config.id} value={config.id}>
@@ -308,7 +373,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             ))}
             {/* 添加模型选项 */}
             <option value="__add_model__" style={{ borderTop: '1px solid #e2e8f0', fontStyle: 'italic' }}>
-              + 添加/配置模型
+              + {messages.addModel}
             </option>
           </select>
         </div>
@@ -323,6 +388,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             onShowManager={handleShowManager}
             supportedProviders={getSupportedProviders()}
             theme={theme}
+            locale={locale}
             customClassName={customClassName}
           />
         )}
@@ -336,18 +402,19 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             supportedProviders={supportedProviders}
             customProviders={customProviders}
             theme={theme}
+            locale={locale}
           />
         )}
       </div>
     );
-  }, [configs, selectedModelId, modelManager, error, loading, getThemeClassName, className, style, placeholder, handleModelSelect, handleAddModel, getProviderDisplayName, showModal, showManager, handleCloseModal, handleCloseManager, editingModel, handleSaveModel, handleShowManager, getSupportedProviders, storage, supportedProviders, customProviders, customClassName, openMenuId]);
+  }, [configs, selectedModelId, modelManager, error, loading, getThemeClassName, className, getFinalStyle, getSelectStyle, placeholder, handleModelSelect, handleAddModel, getProviderDisplayName, showModal, showManager, handleCloseModal, handleCloseManager, editingModel, handleSaveModel, handleShowManager, getSupportedProviders, storage, supportedProviders, customProviders, customClassName, openMenuId, messages, locale]);
 
   // 渲染列表模式
   const renderListMode = useCallback(() => {
     const currentSelectedId = selectedModelId || modelManager.getCurrentModelId();
     
     return (
-      <div className={`${getThemeClassName()} ai-model-select ${className}`} style={style}>
+      <div className={`${getThemeClassName()} ai-model-select ${className}`} style={getFinalStyle()}>
         {/* 错误提示 */}
         {error && (
           <div className="ai-error-message" style={{ padding: '12px 16px', background: 'rgba(239, 68, 68, 0.1)' }}>
@@ -368,7 +435,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             </div>
             <div className="ai-model-actions">
               <span className={`ai-model-status ${config.enabled ? 'enabled' : 'disabled'}`}>
-                {config.enabled ? '启用' : '禁用'}
+                {config.enabled ? messages.enabled : messages.disabled}
               </span>
               <button
                 className="ai-model-menu-button"
@@ -376,7 +443,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
                   e.stopPropagation();
                   setOpenMenuId(openMenuId === config.id ? null : config.id);
                 }}
-                title="更多操作"
+                title={messages.actions}
               >
                 ⋮
               </button>
@@ -406,7 +473,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
                     setOpenMenuId(null);
                   }}
                 >
-                  编辑
+                  {messages.edit}
                 </button>
                 <button
                   className="ai-button secondary"
@@ -417,7 +484,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
                     setOpenMenuId(null);
                   }}
                 >
-                  {config.enabled ? '禁用' : '启用'}
+                  {config.enabled ? messages.disabled : messages.enabled}
                 </button>
                 {allowDelete && (
                   <button
@@ -429,8 +496,8 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
                       setOpenMenuId(null);
                     }}
                   >
-                    删除
-                </button>
+                    {messages.delete}
+                  </button>
                 )}
               </div>
             </div>
@@ -440,7 +507,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
         {/* 添加按钮 */}
         {showAddButton && (
           <div className="ai-model-add-button" onClick={handleAddModel}>
-            <span>{addButtonText}</span>
+            <span>{addButtonText || messages.addModel}</span>
           </div>
         )}
 
@@ -454,6 +521,7 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             onShowManager={handleShowManager}
             supportedProviders={getSupportedProviders()}
             theme={theme}
+            locale={locale}
             customClassName={customClassName}
           />
         )}
@@ -467,19 +535,20 @@ export const AIModelSelect: React.FC<AIModelSelectProps> = ({
             supportedProviders={supportedProviders}
             customProviders={customProviders}
             theme={theme}
+            locale={locale}
           />
         )}
       </div>
     );
-  }, [configs, selectedModelId, error, getThemeClassName, className, style, handleModelSelect, getProviderDisplayName, allowDelete, handleEditModel, handleToggleModel, handleDeleteModel, showAddButton, addButtonText, handleAddModel, showModal, handleCloseModal, editingModel, handleSaveModel, handleShowManager, getSupportedProviders, showManager, handleCloseManager, storage, supportedProviders, customProviders, customClassName]);
+  }, [configs, selectedModelId, error, getThemeClassName, className, getFinalStyle, handleModelSelect, getProviderDisplayName, allowDelete, handleEditModel, handleToggleModel, handleDeleteModel, showAddButton, addButtonText, handleAddModel, showModal, handleCloseModal, editingModel, handleSaveModel, handleShowManager, getSupportedProviders, showManager, handleCloseManager, storage, supportedProviders, customProviders, customClassName, messages, locale, openMenuId]);
 
   // 渲染加载状态
   if (loading) {
     return (
-      <div className={`${getThemeClassName()} ai-model-select ${className}`} style={style}>
+      <div className={`${getThemeClassName()} ai-model-select ${className}`} style={getFinalStyle()}>
         <div className="ai-loading">
           <div className="ai-loading-spinner"></div>
-          正在加载配置...
+          Loading...
         </div>
       </div>
     );

@@ -21,6 +21,7 @@ export type {
   ThemeMode,
   AIModelSender,
   AIModelSenderFactory,
+  SimpleAIConfig,
   ChatMessage,
   SendOptions,
   ChatResponse,
@@ -47,6 +48,13 @@ export {
   getAllProviders,
   validateProviderConfig
 } from './utils/providers';
+
+export {
+  getMessages,
+  t
+} from './utils/i18n';
+
+export type { Locale, I18nMessages } from './utils/i18n';
 
 // 导出新的全局管理器（推荐）
 export {
@@ -92,6 +100,9 @@ export {
 
 // 导出具体的发送器实现
 export { VolcengineAISender } from './providers/volcengine';
+export { AliyunBailianAISender } from './providers/aliyun_bailian';
+export { OpenAICompatibleSender } from './providers/openai_compatible';
+export { GoogleGeminiSender } from './providers/google_gemini';
 
 // 导出样式（可选）
 import './styles/index.css';

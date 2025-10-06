@@ -216,6 +216,7 @@
 .ai-modal-close {
   background: none;
   border: none;
+  padding: 0;
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: var(--border-radius);
@@ -507,7 +508,7 @@
   background: var(--bg-color);
   border-radius: var(--border-radius);
   display: inline-block;
-  min-width: 200px;
+  /* min-width: 200px; */
   width: auto;
 }
 
@@ -530,7 +531,6 @@
   cursor: pointer;
   transition: var(--transition);
   padding-right: 36px;
-  min-width: 200px;
   width: auto;
 }
 

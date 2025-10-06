@@ -13,6 +13,8 @@
   "dependencies": {
     "@ant-design/x": "^1.6.0",
     "@antv/gpt-vis": "^0.5.3",
+    "@google/genai": "^1.22.0",
+    "@google/generative-ai": "^0.24.1",
     "@types/markdown-it": "^14.1.2",
     "@types/react-router-dom": "^5.3.3",
     "ai-model-application-suite": "*",

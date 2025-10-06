@@ -40,8 +40,6 @@
 
 ## 📦 安装
 
-** 注意：尚在自用并优化中，未发布成 npm 包 ** 
-
 ```bash
 npm install ai-model-application-suite
 # 或
@@ -58,20 +56,23 @@ npm install react react-dom
 yarn add react react-dom
 ```
 
-### AI SDK依赖（可选）
+### AI Provider 依赖
 
-根据需要安装对应的AI SDK：
+**默认依赖（已包含）：**
+- `openai` - 支持 OpenAI、DeepSeek、Azure、Ollama、火山引擎等兼容 OpenAI API 的服务
+
+**可选依赖（按需安装）：**
+
+根据需要安装对应的 AI Provider：
 
 ```bash
-# OpenAI
-npm install @ai-sdk/openai
-
-# DeepSeek
-npm install @ai-sdk/deepseek
-
-# 还有更多其他
-
+# Google Gemini（如需使用）
+npm install @google/genai
+# 或
+yarn add @google/genai
 ```
+
+> **注意**：如果尝试使用未安装依赖的 Provider，系统会提示你安装对应的包。
 
 ## 🎯 快速开始
 
@@ -563,14 +564,15 @@ function CustomStyleExample() {
 
 | 提供商 | 枚举值 | NPM包 | 描述 |
 |--------|--------|-------|------|
-| OpenAI | AIProvider.OPENAI | @ai-sdk/openai | OpenAI GPT模型 |
-| DeepSeek | AIProvider.DEEPSEEK | @ai-sdk/deepseek | DeepSeek AI模型 |
-| Anthropic | AIProvider.ANTHROPIC | @ai-sdk/anthropic | Anthropic Claude模型 |
-| Google | AIProvider.GOOGLE | @ai-sdk/google | Google Gemini模型 |
-| Mistral | AIProvider.MISTRAL | @ai-sdk/mistral | Mistral AI模型 |
-| Cohere | AIProvider.COHERE | @ai-sdk/cohere | Cohere AI模型 |
-| Azure | AIProvider.AZURE | @ai-sdk/azure | Azure OpenAI服务 |
-| Ollama | AIProvider.OLLAMA | ollama | 本地Ollama模型 |
+| OpenAI | AIProvider.OPENAI | openai (默认) | OpenAI GPT模型 |
+| OpenAI兼容 | AIProvider.OPENAILIKE | openai (默认) | 兼容OpenAI API的模型 |
+| DeepSeek | AIProvider.DEEPSEEK | openai (默认) | DeepSeek AI模型 |
+| Google Gemini | AIProvider.GOOGLE | @google/genai (可选) | Google Gemini模型 |
+| Azure | AIProvider.AZURE | openai (默认) | Azure OpenAI服务 |
+| 火山引擎 | AIProvider.VOLCENGINE | 内置实现 | 火山引擎豆包模型 |
+| 阿里百炼 | AIProvider.ALIYUN_BAILIAN | 内置实现 | 阿里云百炼平台 |
+| Anthropic | AIProvider.ANTHROPIC | - (暂无实现计划，对开发者不友好) | Anthropic Claude模型 |
+| Ollama | AIProvider.OLLAMA | openai (默认) | 本地Ollama模型 |
 
 ### AI消息适配器支持的服务商
 
@@ -1204,7 +1206,29 @@ MIT
 
 ## 📝 更新日志
 
-### v0.0.4 (最新)
+### v0.0.5 (最新)
+- 🆕 **新增 Google Gemini 支持** - 通过可选依赖 `@google/genai` 支持 Google Gemini 模型
+  - 支持 Gemini Pro、Gemini 1.5 Pro、Gemini 1.5 Flash 等模型
+  - 完整支持聊天和流式响应
+  - 智能消息格式转换，支持系统提示词
+  - 按需安装，不使用则无需安装额外依赖
+- 🔧 **优化依赖管理** - 只默认安装 `openai` 包，其他 Provider 按需安装
+  - 减小包体积，提升安装速度
+  - 清晰的依赖说明和错误提示
+  - 支持可选依赖的 peerDependencies 配置
+- 🆕 **新增思考过程展示** - 支持显示 AI 的思考内容（reasoning_content）
+  - 独立的思考消息区域，不干扰主要内容
+  - 实时流式显示思考过程
+  - 可控制显示/隐藏
+  - 自动滚动到最新思考内容
+- 🐛 **修复继续回答问题** - 修复手动继续时内容累积错误
+  - 正确累积新收到的内容
+  - 支持继续回答时的思考过程展示
+  - 改进内容合并逻辑
+- 🗑️ **移除不支持的 Provider** - 移除 Mistral 和 Cohere 相关代码和文档
+- 📝 **改进文档** - 更新依赖说明、Provider 列表和使用示例
+
+### v0.0.4
 - 🆕 **新增代码块换行支持** - 修复AI输出代码块宽度失控问题，支持行内换行展示
   - 新增 `custom-code-block.css` 样式文件，专门处理代码块换行
   - 优化 `SyntaxHighlighter` 配置，添加 `whiteSpace: 'pre-wrap'` 和 `wordBreak: 'break-word'`

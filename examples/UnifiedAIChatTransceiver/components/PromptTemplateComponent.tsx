@@ -16,7 +16,7 @@ export const PromptTemplateComponent: React.FC<PromptTemplateComponentProps> = (
 }) => {
   return (
     <div className="sidebar-section">
-      <h3>🎭 开发用提示词追加</h3>
+      <h3>🎭 Prompt Template</h3>
       <div className="prompt-templates">
         <div className="template-selector">
           <select
@@ -30,7 +30,7 @@ export const PromptTemplateComponent: React.FC<PromptTemplateComponentProps> = (
             }}
             className="template-select"
           >
-            <option value="">不使用模板</option>
+            <option value="">Not using template</option>
             {promptTemplates.map(template => (
               <option key={template.id} value={template.id}>
                 {template.name} - {template.description}
@@ -41,11 +41,11 @@ export const PromptTemplateComponent: React.FC<PromptTemplateComponentProps> = (
         
         {selectedTemplate === 'custom' && (
           <div className="custom-prompt">
-            <label>自定义提示词:</label>
+            <label>Custom Prompt:</label>
             <textarea
               value={customPrompt}
               onChange={(e) => onCustomPromptChange(e.target.value)}
-              placeholder="输入自定义提示词..."
+              placeholder="Custom Prompt..."
               rows={3}
               className="custom-prompt-input"
             />
@@ -55,7 +55,7 @@ export const PromptTemplateComponent: React.FC<PromptTemplateComponentProps> = (
         {selectedTemplate && (
           <div className="template-preview">
             <small>
-              <strong>当前模板:</strong> {promptTemplates.find(t => t.id === selectedTemplate)?.name}
+              <strong>Current Template:</strong> {promptTemplates.find(t => t.id === selectedTemplate)?.name}
             </small>
             <div className="template-content">
               {PromptTemplateProcessor.getPromptContent(selectedTemplate, customPrompt)}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AIModelConfig, AIProvider, AIProviderMeta, StorageConfig, ThemeMode } from '../types';
 import { StorageManager } from '../utils/storage';
 import { getProviderMeta } from '../utils/providers';
+import { getMessages } from '../utils/i18n';
 import AIModelConfModal from './AIModelConfModal';
 import '../styles/index.css';
 
@@ -12,6 +13,8 @@ export interface AIModelManagerProps {
   onClose: () => void;
   // 主题模式
   theme?: ThemeMode;
+  // 语言设置
+  locale?: 'en' | 'zh';
   // 数据存储方式配置
   storage?: StorageConfig;
   // 支持的AI提供商配置
@@ -32,13 +35,13 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
   visible,
   onClose,
   theme = 'system',
+  locale = 'en',
   storage,
   supportedProviders = [
     AIProvider.OPENAI,
     AIProvider.DEEPSEEK,
     AIProvider.ANTHROPIC,
     AIProvider.GOOGLE,
-    AIProvider.MISTRAL,
     AIProvider.VOLCENGINE
   ],
   customProviders = [],
@@ -47,6 +50,8 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
   customClassName = '', // 新增：接收自定义样式类名
   style
 }) => {
+  // 获取国际化消息
+  const messages = getMessages(locale);
   // 状态管理
   const [configs, setConfigs] = useState<AIModelConfig[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +74,7 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
     
     // 添加默认支持的提供商
     supportedProviders.forEach(providerId => {
-      const meta = getProviderMeta(providerId);
+      const meta = getProviderMeta(providerId, locale);
       if (meta) {
         providers.push(meta);
       }
@@ -141,7 +146,7 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
 
   // 处理删除模型
   const handleDeleteModel = useCallback(async (modelId: string) => {
-    if (!confirm('确认删除此AI模型配置吗？')) {
+    if (!confirm(messages.confirmDeleteMessage)) {
       return;
     }
     
@@ -155,9 +160,9 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
         onConfigChange(updatedConfigs);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '删除配置失败');
+      setError(err instanceof Error ? err.message : 'Failed to delete config');
     }
-  }, [storageManager, loadConfigs, onConfigChange]);
+  }, [storageManager, loadConfigs, onConfigChange, messages]);
 
   // 处理启用/禁用模型
   const handleToggleModel = useCallback(async (modelId: string, enabled: boolean) => {
@@ -221,7 +226,7 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
         {/* 弹窗头部 */}
         <div className="ai-modal-header">
           <span className="ai-modal-title">
-            AI模型配置管理
+            {messages.aiModelManager}
           </span>
           <button className="ai-modal-close" onClick={onClose}>
             ×
@@ -247,7 +252,7 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
           {loading ? (
             <div className="ai-loading">
               <div className="ai-loading-spinner"></div>
-              正在加载配置...
+              Loading...
             </div>
           ) : configs.length === 0 ? (
             <div style={{ 
@@ -255,8 +260,8 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
               padding: '40px 20px', 
               color: 'var(--text-secondary)' 
             }}>
-              <p>暂无AI模型配置</p>
-              <p style={{ fontSize: '12px' }}>请先添加一些AI模型配置</p>
+              <p>{messages.noConfigs}</p>
+              <p style={{ fontSize: '12px' }}>{messages.clickAddToCreate}</p>
             </div>
           ) : (
             <div className="ai-model-list">
@@ -275,28 +280,28 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
                   </div>
                   <div className="ai-model-actions" style={{ gap: '12px' }}>
                     <span className={`ai-model-status ${config.enabled ? 'enabled' : 'disabled'}`}>
-                      {config.enabled ? '启用' : '禁用'}
+                      {config.enabled ? messages.enabled : messages.disabled}
                     </span>
                     <button
                       className="ai-button secondary"
                       style={{ padding: '4px 8px', fontSize: '12px' }}
                       onClick={() => handleEditModel(config)}
                     >
-                      编辑
+                      {messages.edit}
                     </button>
                     <button
                       className="ai-button secondary"
                       style={{ padding: '4px 8px', fontSize: '12px' }}
                       onClick={() => handleToggleModel(config.id, !config.enabled)}
                     >
-                      {config.enabled ? '禁用' : '启用'}
+                      {config.enabled ? messages.disabled : messages.enabled}
                     </button>
                     <button
                       className="ai-button danger"
                       style={{ padding: '4px 8px', fontSize: '12px' }}
                       onClick={() => handleDeleteModel(config.id)}
                     >
-                      删除
+                      {messages.delete}
                     </button>
                   </div>
                 </div>
@@ -308,10 +313,10 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
         {/* 弹窗底部 */}
         <div className="ai-modal-footer">
           <span style={{ color: 'var(--text-secondary)', fontSize: '12px', marginRight: 'auto' }}>
-            共 {configs.length} 个配置
+            {configs.length} {locale === 'zh' ? '个配置' : 'config(s)'}
           </span>
           <button className="ai-button secondary" onClick={onClose}>
-            关闭
+            {messages.close}
           </button>
         </div>
 
@@ -324,6 +329,7 @@ export const AIModelManager: React.FC<AIModelManagerProps> = ({
             onSave={handleSaveModel}
             supportedProviders={getSupportedProviders()}
             theme={theme}
+            locale={locale}
             customClassName={customClassName}
           />
         )}

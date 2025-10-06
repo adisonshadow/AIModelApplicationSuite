@@ -1,4 +1,4 @@
-// AI模型配置类型定义 - 统一版本
+// AI模型配置类型定义 - 统一版本（用于管理）
 export interface AIModelConfig {
   id: string;
   name: string;
@@ -18,6 +18,18 @@ export interface AIModelConfig {
   };
 }
 
+// 简化的AI配置类型 - 用于直接应用
+export interface SimpleAIConfig {
+  provider: AIProvider;
+  config: {
+    apiKey: string;
+    baseURL?: string;
+    model?: string;
+    jsonParams?: string;
+    [key: string]: any;
+  };
+}
+
 // 主题类型
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -28,11 +40,10 @@ export enum AIProvider {
   DEEPSEEK = 'deepseek',
   ANTHROPIC = 'anthropic',
   GOOGLE = 'google',
-  MISTRAL = 'mistral',
-  COHERE = 'cohere',
   AZURE = 'azure',
   OLLAMA = 'ollama',
   VOLCENGINE = 'volcengine',
+  ALIYUN_BAILIAN = 'aliyun_bailian',
   CUSTOM = 'custom'
 }
 
@@ -75,6 +86,8 @@ export interface AIModelSelectProps {
   onConfigChange?: (configs: AIModelConfig[]) => void;
   // 主题模式：light | dark | system
   theme?: ThemeMode;
+  // 语言设置：'en' | 'zh'
+  locale?: 'en' | 'zh';
   // 自定义样式类名
   className?: string;
   // 自定义样式类名（用于主色调等样式）
@@ -106,6 +119,10 @@ export interface AIModelSelectProps {
   formatLabel?: (config: AIModelConfig) => string;
   // AI模型选择器实例
   manager?: any;
+  // 宽度设置：支持数字(px)或字符串('百分比%')
+  width?: number | string;
+  // 块级模式：如果为 true，宽度设置为 100%
+  block?: boolean;
 }
 
 export interface AIModelConfModalProps {
@@ -121,6 +138,8 @@ export interface AIModelConfModalProps {
   supportedProviders: AIProviderMeta[];
   // 主题模式
   theme?: ThemeMode;
+  // 语言设置：'en' | 'zh'
+  locale?: 'en' | 'zh';
   // 自定义样式类名
   className?: string;
   // 自定义样式类名（用于主色调等样式）
@@ -140,6 +159,8 @@ export interface AIModelManagerProps {
   onConfigChange?: (configs: AIModelConfig[]) => void;
   // 主题模式：light | dark | system
   theme?: ThemeMode;
+  // 语言设置：'en' | 'zh'
+  locale?: 'en' | 'zh';
   // 自定义样式类名
   className?: string;
   // 自定义样式类名（用于主色调等样式）
@@ -190,9 +211,9 @@ export interface AIModelManagerState {
 // AI 模型发送器接口
 export interface AIModelSender {
   sendChatMessage(messages: ChatMessage[], options?: SendOptions): Promise<ChatResponse>;
-  sendChatMessageStream(messages: ChatMessage[], options?: SendOptions, onUpdate?: (chunk: any) => void): Promise<ChatStreamResponse>;
-  sendCompletion(prompt: string, options?: SendOptions): Promise<CompletionResponse>;
-  sendCompletionStream(prompt: string, options?: SendOptions): Promise<CompletionStreamResponse>;
+  sendChatMessageStream(messages: ChatMessage[], options?: SendOptions, onUpdate?: (chunk: any) => void, onFinish?: (result: { finishReason: string; fullContent: string }) => void): Promise<ChatStreamResponse>;
+  sendCompletion(prompt: string, options?: SendOptions): Promise<any>;
+  sendCompletionStream(prompt: string, options?: SendOptions, onUpdate?: (chunk: any) => void): Promise<any>;
 }
 
 // 弃用标记 - 将在 v1.0.0 中移除
@@ -228,6 +249,14 @@ export interface SendOptions {
   autoContinue?: boolean;
   // 最大自动继续次数，防止无限循环
   maxAutoContinue?: number;
+  // 元数据信息，包括会话ID等
+  metadata?: {
+    session_id?: string;
+    [key: string]: any;
+  };
+  // Function calling 支持
+  functions?: any[];
+  function_call?: string | { name: string };
 }
 
 // 自动继续状态接口

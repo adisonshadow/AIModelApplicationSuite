@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Bubble, Sender, Attachments, AttachmentsProps } from '@ant-design/x';
 
 import { Flex, Button, Divider, Switch, Badge, Tooltip, type GetProp, type GetRef } from 'antd';
-import { LinkOutlined, ApiOutlined, CloudUploadOutlined, RobotOutlined } from '@ant-design/icons';
+import { LinkOutlined, ApiOutlined, CloudUploadOutlined, RobotOutlined, CloseOutlined, SettingOutlined } from '@ant-design/icons';
 
 // AI消息适配器
 import { createAIModelSender } from '../../packages/ai_model_application_suite/src';
@@ -26,6 +26,7 @@ import {
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
+  reasoning_content?: string;
   name?: string;
   status?: 'loading' | 'success' | 'error';
 }
@@ -81,21 +82,21 @@ const AIModelSender: React.FC = () => {
   
   // 聊天相关状态
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'system', content: '你好！我是AI编程专家，有什么可以帮助你的吗？' }
+    { role: 'system', content: 'Hello! I\'m your AI assistant. How can I help you today?' }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   
   // 发送模式
   const [streamMode, setStreamMode] = useState(true); // 默认启用流式响应
   const [autoContinueEnabled, setAutoContinueEnabled] = useState(true); // 默认启用自动继续
+  const [showReasoning, setShowReasoning] = useState(true); // 默认显示思考过程
   
   // 取消当前请求
   const cancelCurrentRequest = useCallback(() => {
     console.log('🛑🛑🛑 取消请求被调用！', { abortController: !!abortController, loading });
-    alert('取消请求被调用！'); // 临时测试用
+    alert('Cancel request is called!'); // 临时测试用
     
     if (abortController) {
-      console.log('🛑 正在取消请求...');
       abortController.abort();
       setAbortController(null);
       setLoading(false);
@@ -105,14 +106,14 @@ const AIModelSender: React.FC = () => {
         const newMessages = [...prev];
         const lastMessage = newMessages[newMessages.length - 1];
         if (lastMessage && lastMessage.role === 'assistant') {
-          lastMessage.content = lastMessage.content + '\n\n[请求已取消]';
+          lastMessage.content = lastMessage.content + '\n\n[Request cancelled]';
         }
         return newMessages;
       });
       
-      console.log('✅ 请求已取消');
+      console.log('✅ Request cancelled');
     } else {
-      console.log('⚠️ 没有可取消的请求');
+      console.log('⚠️ No request to cancel');
       setLoading(false);
     }
   }, [abortController, loading]);
@@ -159,12 +160,36 @@ const AIModelSender: React.FC = () => {
     // 监听配置列表变化
     const unsubscribeConfigs = manager.subscribe('configsLoaded', (event: any) => {
       setConfigs(event.data || []);
-      console.log('📝 globalAIModelManager 配置变化:', event.data);
+      console.log('📝 globalAIModelManager 配置加载:', event.data);
     });
 
+    // 订阅配置添加事件
+    const unsubscribeConfigAdded = manager.subscribe('configAdded', () => {
+      const newConfigs = manager.getConfigs();
+      setConfigs(newConfigs);
+      console.log('➕ globalAIModelManager 配置添加:', newConfigs);
+    });
+
+    // 订阅配置更新事件
+    const unsubscribeConfigUpdated = manager.subscribe('configUpdated', () => {
+      const newConfigs = manager.getConfigs();
+      setConfigs(newConfigs);
+      console.log('🔄 globalAIModelManager 配置更新:', newConfigs);
+    });
+
+    // 订阅配置删除事件
+    const unsubscribeConfigDeleted = manager.subscribe('configDeleted', () => {
+      const newConfigs = manager.getConfigs();
+      setConfigs(newConfigs);
+      console.log('🗑️ globalAIModelManager 配置删除:', newConfigs);
+    });
+    
     return () => {
       unsubscribe();
       unsubscribeConfigs();
+      unsubscribeConfigAdded();
+      unsubscribeConfigUpdated();
+      unsubscribeConfigDeleted();
     };
   }, []);
   
@@ -204,6 +229,7 @@ const AIModelSender: React.FC = () => {
   }, [continueContext]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const reasoningEndRef = useRef<HTMLDivElement>(null);
 
   const iconStyle = {
     color: '#666',
@@ -218,6 +244,24 @@ const AIModelSender: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  
+  // 获取最新消息的思考内容
+  const latestReasoning = useMemo(() => {
+    if (!showReasoning || messages.length === 0) return '';
+    const lastMessage = messages[messages.length - 1];
+    const reasoning = lastMessage?.role === 'assistant' ? lastMessage.reasoning_content || '' : '';
+    if (reasoning) {
+      console.log('💭 最新思考内容:', reasoning.slice(0, 100));
+    }
+    return reasoning;
+  }, [messages, showReasoning]);
+  
+  // 思考内容自动滚动到底部
+  useEffect(() => {
+    if (latestReasoning && reasoningEndRef.current) {
+      reasoningEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [latestReasoning]);
 
   // 配置加载已由 AIModelSelect 组件自动处理，无需手动加载
 
@@ -236,7 +280,7 @@ const AIModelSender: React.FC = () => {
     
     if (!selectedModelId || selectedModelId.trim() === '') {
       console.log('🚫 未选择模型');
-      setError('请先选择一个AI模型配置');
+      setError('Please select an AI model configuration');
       return;
     }
     
@@ -249,7 +293,7 @@ const AIModelSender: React.FC = () => {
     const selectedConfig = configs.find(c => c.id === selectedModelId);
     if (!selectedConfig) {
       console.error('❌ 找不到选中的配置:', { selectedModelId, availableConfigs: configs.map(c => c.id) });
-      setError('请先选择一个AI模型配置');
+      setError('Please select an AI model configuration');
       return;
     }
 
@@ -321,7 +365,8 @@ const AIModelSender: React.FC = () => {
         // 先添加一个空的助手消息，用于实时更新
         const assistantMessage: ChatMessage = {
           role: 'assistant',
-          content: ''
+          content: '',
+          reasoning_content: ''
         };
         setMessages(prev => [...prev, assistantMessage]);
         
@@ -332,6 +377,10 @@ const AIModelSender: React.FC = () => {
         const controller = new AbortController();
         setAbortController(controller);
         
+        // 累积内容的变量
+        let accumulatedContent = '';
+        let accumulatedReasoningContent = '';
+        
         // 使用 sendChatMessageStream 方法，支持自动继续
         const response = await sender.sendChatMessageStream(aiMessages, {
           model: selectedConfig.config?.model,
@@ -340,18 +389,35 @@ const AIModelSender: React.FC = () => {
           maxAutoContinue: 3
         }, (chunk: any) => {
           // 实时处理流式数据
-          // console.log('🔄 收到流式数据块:', chunk);
+          console.log('📦 收到流消息 chunk:', chunk);
           
-          if (chunk.choices?.[0]?.delta?.content) {
-            // 实时更新消息内容 - chunk.choices[0].delta.content 已经是累积内容
-            setMessages(prev => {
-              const newMessages = [...prev];
-              const lastMessage = newMessages[newMessages.length - 1];
-              if (lastMessage && lastMessage.role === 'assistant') {
-                lastMessage.content = chunk.choices[0].delta.content; // 直接使用累积内容
+          if (chunk.choices && chunk.choices[0]) {
+            const choice = chunk.choices[0];
+            
+            // 处理文本内容（包括普通内容和思考内容）
+            if (choice.delta) {
+              // 累积内容
+              if (choice.delta.content) {
+                accumulatedContent += choice.delta.content;
               }
-              return newMessages;
-            });
+              
+              // 累积思考内容
+              if (choice.delta.reasoning_content) {
+                accumulatedReasoningContent += choice.delta.reasoning_content;
+                console.log('🧠 收到思考内容片段:', choice.delta.reasoning_content.slice(0, 50));
+              }
+              
+              // 更新消息状态
+              setMessages(prev => {
+                const newMessages = [...prev];
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage && lastMessage.role === 'assistant') {
+                  lastMessage.content = accumulatedContent;
+                  (lastMessage as any).reasoning_content = accumulatedReasoningContent;
+                }
+                return newMessages;
+              });
+            }
           }
           
           // 检查自动继续状态
@@ -368,14 +434,15 @@ const AIModelSender: React.FC = () => {
             index: 0,
             message: {
               role: 'assistant',
-              content: response.choices?.[0]?.delta?.content || ''
-            },
+              content: accumulatedContent || response.choices?.[0]?.delta?.content || '',
+              ...(accumulatedReasoningContent ? { reasoning_content: accumulatedReasoningContent } : {})
+            } as ChatMessage,
             finishReason: response.choices?.[0]?.finishReason || 'stop'
           }],
           usage: {
             promptTokens: Math.floor(aiMessages.reduce((sum: number, msg: ChatMessage) => sum + msg.content.length, 0) / 4),
-            completionTokens: Math.floor((response.choices?.[0]?.delta?.content || '').length / 4),
-            totalTokens: Math.floor((aiMessages.reduce((sum: number, msg: ChatMessage) => sum + msg.content.length, 0) + (response.choices?.[0]?.delta?.content || '').length) / 4)
+            completionTokens: Math.floor(accumulatedContent.length / 4),
+            totalTokens: Math.floor((aiMessages.reduce((sum: number, msg: ChatMessage) => sum + msg.content.length, 0) + accumulatedContent.length) / 4)
           },
           created: response.created || Math.floor(Date.now() / 1000)
         };
@@ -477,7 +544,7 @@ const AIModelSender: React.FC = () => {
         
         const assistantMessage: ChatMessage = {
           role: 'assistant',
-          content: response.choices[0]?.message?.content || '抱歉，没有收到有效回复'
+          content: response.choices[0]?.message?.content || 'Sorry, no valid response received'
         };
         setMessages(prev => [...prev, assistantMessage]);
         
@@ -487,7 +554,7 @@ const AIModelSender: React.FC = () => {
       // 清理 AbortController
       setAbortController(null);
       
-      const errorMessage = `发送失败: ${err.message}`;
+      const errorMessage = `Sending failed: ${err.message}`;
       setError(errorMessage);
       
       // 控制台日志：错误信息
@@ -501,7 +568,7 @@ const AIModelSender: React.FC = () => {
       
       const errorMsg: ChatMessage = {
         role: 'assistant',
-        content: `❌ 错误: ${errorMessage}`
+        content: `❌ Error: ${errorMessage}`
       };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
@@ -512,7 +579,7 @@ const AIModelSender: React.FC = () => {
 
   // 清空聊天记录
   const clearChat = () => {
-    setMessages([{ role: 'system', content: '你好！我是AI编程专家，有什么可以帮助你的吗？' }]);
+    setMessages([{ role: 'system', content: 'Hello! I\'m your AI assistant. How can I help you today?' }]);
     setLastResponse(null);
     setError(null);
     setNeedsManualContinue(false);
@@ -605,13 +672,10 @@ const AIModelSender: React.FC = () => {
       
       const continueMessage: ChatMessage = {
         role: 'user',
-        content: `请继续完成上述回答，从上次中断的地方继续。这是同一个会话的继续，不是新的回答。
-
-如果中断不是在代码块中，请不要重复之前的内容。
-
-如果中断是在代码块中，请不要输出代码块标识头（比如\`\`\`html）， 直接输出代码。 从上次中断的这行开始重新输出并输出完整的行，允许行内重复。
-
-上次回答结束在: ${lastContent}
+        content: `Please continue to complete the above answer and proceed from where it was interrupted last time. This is a continuation of the same conversation, not a new answer.
+If the interruption is not within a code block, please do not repeat the previous content.
+If the interruption is within a code block, please do not output the code block identifier header (such as \`\`\`html), and directly output the code. Start re-outputting from the line where the last interruption occurred and output the complete line; inline repetition is allowed.
+The last answer ended at: ${lastContent}
 `
       };
       
@@ -620,7 +684,10 @@ const AIModelSender: React.FC = () => {
       
       // 使用流式模式继续，启用自动继续
       const sender = createRealAISender(selectedConfig);
-      let newAccumulatedContent = accumulatedContent; // 从已有内容开始累积
+      
+      // 累积新收到的内容
+      let continuedContent = ''; // 继续回答时新收到的内容
+      let continuedReasoningContent = ''; // 继续回答时新收到的思考内容
       
       const response = await sender.sendChatMessageStream(continueMessages, {
         model: selectedConfig.config?.model,
@@ -629,24 +696,41 @@ const AIModelSender: React.FC = () => {
         maxAutoContinue: 1 // 手动继续只允许1次自动继续
       }, (chunk: any) => {
         // 实时处理流式数据
-        if (chunk.choices?.[0]?.delta?.content) {
-          const newContent = chunk.choices[0].delta.content;
+        console.log('📦 继续回答 - 收到流消息 chunk:', chunk);
+        
+        if (chunk.choices && chunk.choices[0]) {
+          const choice = chunk.choices[0];
           
-          // 使用智能内容合并
-          newAccumulatedContent = smartContentMerge(accumulatedContent, newContent);
-          
-          // 实时更新消息内容
-          setMessages(prev => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage && lastMessage.role === 'assistant') {
-              lastMessage.content = newAccumulatedContent;
+          // 处理文本内容
+          if (choice.delta) {
+            // 累积新收到的内容
+            if (choice.delta.content) {
+              continuedContent += choice.delta.content;
             }
-            return newMessages;
-          });
+            
+            // 累积新收到的思考内容
+            if (choice.delta.reasoning_content) {
+              continuedReasoningContent += choice.delta.reasoning_content;
+              console.log('🧠 继续回答 - 收到思考内容片段:', choice.delta.reasoning_content.slice(0, 50));
+            }
+            
+            // 实时更新消息内容：原有内容 + 新内容
+            setMessages(prev => {
+              const newMessages = [...prev];
+              const lastMessage = newMessages[newMessages.length - 1];
+              if (lastMessage && lastMessage.role === 'assistant') {
+                lastMessage.content = accumulatedContent + continuedContent;
+                lastMessage.reasoning_content = continuedReasoningContent; // 继续回答时只显示新的思考内容
+              }
+              return newMessages;
+            });
+          }
         }
       });
 
+      // 计算最终累积的内容
+      const finalAccumulatedContent = accumulatedContent + continuedContent;
+      
       // 更新最终响应
       const finalResponse: ChatResponse = {
         id: response.id || 'manual-continue',
@@ -655,14 +739,15 @@ const AIModelSender: React.FC = () => {
           index: 0,
           message: {
             role: 'assistant',
-            content: newAccumulatedContent
-          },
+            content: finalAccumulatedContent,
+            reasoning_content: continuedReasoningContent
+          } as ChatMessage,
           finishReason: response.choices?.[0]?.finishReason || 'stop'
         }],
         usage: {
           promptTokens: Math.floor(continueMessages.reduce((sum: number, msg: ChatMessage) => sum + msg.content.length, 0) / 4),
-          completionTokens: Math.floor(newAccumulatedContent.length / 4),
-          totalTokens: Math.floor((continueMessages.reduce((sum: number, msg: ChatMessage) => sum + msg.content.length, 0) + newAccumulatedContent.length) / 4)
+          completionTokens: Math.floor(finalAccumulatedContent.length / 4),
+          totalTokens: Math.floor((continueMessages.reduce((sum: number, msg: ChatMessage) => sum + msg.content.length, 0) + finalAccumulatedContent.length) / 4)
         },
         created: response.created || Math.floor(Date.now() / 1000)
       };
@@ -683,7 +768,7 @@ const AIModelSender: React.FC = () => {
         setNeedsManualContinue(true); // 重要：设置状态为 true
         setContinueContext({
           currentMessages: continueMessages,
-          accumulatedContent: newAccumulatedContent,
+          accumulatedContent: finalAccumulatedContent, // 使用累积后的完整内容
           attemptCount: 1,
           sessionId: sessionId
         });
@@ -699,16 +784,20 @@ const AIModelSender: React.FC = () => {
         timestamp: new Date().toISOString(),
         responseId: finalResponse.id,
         model: finalResponse.model,
-        contentLength: finalResponse.choices[0]?.message?.content?.length || 0,
-        contentPreview: finalResponse.choices[0]?.message?.content?.slice(-100) || '',
+        originalContentLength: accumulatedContent.length,
+        continuedContentLength: continuedContent.length,
+        totalContentLength: finalAccumulatedContent.length,
+        contentPreview: finalAccumulatedContent.slice(-100),
+        hasReasoningContent: !!continuedReasoningContent,
+        reasoningContentLength: continuedReasoningContent.length,
         finishReason: finalResponse.choices[0]?.finishReason || 'unknown',
         usage: finalResponse.usage
       });
 
     } catch (err: any) {
-      const errorMessage = `手动继续失败: ${err.message}`;
+      const errorMessage = `Manual continue failed: ${err.message}`;
       setError(errorMessage);
-      console.error('❌ 手动继续失败:', err);
+      console.error('❌ Manual continue failed:', err);
     } finally {
       setLoading(false);
     }
@@ -734,10 +823,7 @@ const AIModelSender: React.FC = () => {
   }, [storageConfig]);
 
   // 处理配置变化
-  const handleConfigChange = useCallback((configs: AIModelConfig[]) => {
-    console.log('🔧 AIModelManagerComponent 配置变化:', configs);
-    setConfigs(configs);
-  }, []);
+  // handleConfigChange 已移除，改为使用 globalAIModelManager 的事件监听
 
   // 处理回车键发送
   // const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -805,14 +891,13 @@ const AIModelSender: React.FC = () => {
         {/* 左侧：模型选择和配置 */}
         <div className="sender-sidebar">
           <div className="sidebar-section">
-            <h3>🔧 模型配置</h3>
+            <h3>🔧 Model Select</h3>
             <div className="model-selector">
               <AIModelSelect
                 mode="select"
                 theme="light"
                 selectedModelId={selectedModelId}
                 onModelChange={handleModelChange}
-                onConfigChange={handleConfigChange}
                 storage={storageConfig}
                 supportedProviders={[
                   AIProvider.OPENAI,
@@ -822,7 +907,7 @@ const AIModelSender: React.FC = () => {
                   AIProvider.GOOGLE,
                   AIProvider.VOLCENGINE
                 ]}
-                placeholder="选择一个AI模型..."
+                placeholder="Select an AI model..."
                 style={{ 
                   minWidth: '100%'
                 }}
@@ -833,11 +918,11 @@ const AIModelSender: React.FC = () => {
             {selectedConfig && selectedConfig.config && (
               <div className="model-info">
                 <div className="info-row">
-                  <span className="info-label">模型ID:</span>
+                  <span className="info-label">Model ID:</span>
                   <span className="info-value">{selectedConfig.config.model || '未设置'}</span>
                 </div>
                 <div className="info-row">
-                  <span className="info-label">提供商:</span>
+                  <span className="info-label">Provider:</span>
                   <span className="info-value">{selectedConfig.provider}</span>
                 </div>
               </div>
@@ -845,22 +930,16 @@ const AIModelSender: React.FC = () => {
           </div>
           
           <div className="sidebar-section">
-            <h3>⚙️ 配置管理</h3>
+            <h3>⚙️ Configuration</h3>
             <div className="model-manager">
-              <button 
+              <Button 
                 onClick={() => setShowConfigManager(!showConfigManager)}
-                style={{ 
-                  width: '100%', 
-                  padding: '8px 12px', 
-                  marginBottom: '10px',
-                  border: '1px solid #d9d9d9',
-                  borderRadius: '4px',
-                  backgroundColor: '#fff',
-                  cursor: 'pointer'
-                }}
+                type="primary"
+                ghost
+                icon={showConfigManager ? <CloseOutlined /> : <SettingOutlined />}
               >
-                {showConfigManager ? '隐藏配置管理器' : '显示配置管理器'}
-              </button>
+                Configuration Manager
+              </Button>
               
               {showConfigManager && (
                 <AIModelManagerComponent
@@ -876,7 +955,6 @@ const AIModelSender: React.FC = () => {
                     AIProvider.VOLCENGINE
                   ]}
                   theme="light"
-                  onConfigChange={handleConfigChange}
                 />
               )}
             </div>
@@ -909,35 +987,23 @@ const AIModelSender: React.FC = () => {
 
 
           <div className="sidebar-section">
-            <h3>📊 使用统计</h3>
+            <h3>📊 Statistics</h3>
             <div className="stats">
               <div className="stat-item">
-                <span className="stat-label">消息数量:</span>
+                <span className="stat-label">Message Count:</span>
                 <span className="stat-value">{messages.length - 1}</span>
               </div>
               {lastResponse && (
                 <div className="stat-item">
-                  <span className="stat-label">Token使用:</span>
+                  <span className="stat-label">Token Usage:</span>
                   <span className="stat-value">
                     {lastResponse.usage?.totalTokens || 0}
                   </span>
                 </div>
               )}
               <div className="stat-item">
-                <span className="stat-label">可用配置:</span>
+                <span className="stat-label">Available Configurations:</span>
                 <span className="stat-value">{configs.length}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">当前模式:</span>
-                <span className="stat-value">
-                  {streamMode ? '流式聊天' : '普通聊天'}
-                </span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">自动继续:</span>
-                <span className="stat-value">
-                  {autoContinueEnabled ? '已启用' : '已禁用'}
-                </span>
               </div>
             </div>
           </div>
@@ -945,15 +1011,13 @@ const AIModelSender: React.FC = () => {
           {/* 响应信息显示 */}
           {lastResponse && (
               <div className="sidebar-section">
-                <h3>📋 响应信息</h3>
+                <h3>📋 Response Information</h3>
                 <div className="info-item">
-                  <strong>聊天响应:</strong>
                   <div className="info-details">
-                    <span>模型: {lastResponse.model}</span>
                     <span style={{ wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>ID: {lastResponse.id}</span>
                     {/* <span>Token: {lastResponse.usage?.totalTokens || 0}</span> */}
-                    <span>模式: {streamMode ? '流式' : '普通'}</span>
-                    <span>自动继续: {autoContinueEnabled ? '已启用' : '已禁用'}</span>
+                    <span>Mode: {streamMode ? 'Stream' : 'Normal'}</span>
+                    <span>Auto Continue: {autoContinueEnabled ? 'Enabled' : 'Disabled'}</span>
                   </div>
 
                   {/* 错误显示 */}
@@ -973,11 +1037,12 @@ const AIModelSender: React.FC = () => {
         {/* 右侧：聊天界面 */}
         <div className="sender-main">
           <div className="chat-container">
-                          <div className="chat-header">
+              <div className="chat-header">
                 <h3>
-                  💬 AI对话
-                  {streamMode && <span className="stream-badge">🚰 流式</span>}
+                  💬 AI Conversation
+                  {/* {streamMode && <span className="stream-badge">🚰 流式</span>}
                   {autoContinueEnabled && <span className="stream-badge">🔄 自动继续</span>}
+                  {showReasoning && <span className="stream-badge">🧠 思考</span>} */}
                 </h3>
               <div className="chat-actions">
                 <button
@@ -985,7 +1050,7 @@ const AIModelSender: React.FC = () => {
                   onClick={clearChat}
                   disabled={messages.length <= 1}
                 >
-                  🗑️ 清空聊天
+                  🗑️ Clear Chat
                 </button>
               </div>
             </div>
@@ -998,8 +1063,8 @@ const AIModelSender: React.FC = () => {
                   key: index.toString(),
                   role: message.role === 'user' ? 'user' : 'assistant',
                   content: message.content,
-                  header: message.role === 'user' ? '用户' : 
-                         message.role === 'assistant' ? 'AI助手' : '系统',
+                  header: message.role === 'user' ? 'User' : 
+                         message.role === 'assistant' ? 'AI Assistant' : 'System',
                   placement: message.role === 'user' ? 'end' : 'start',
                   variant: message.role === 'user' ? 'filled' : 'outlined',
                   classNames: {
@@ -1011,18 +1076,18 @@ const AIModelSender: React.FC = () => {
                   user: {
                     placement: 'end',
                     variant: 'filled',
-                    header: '用户'
+                    header: 'User'
                   },
                   assistant: {
                     placement: 'start',
                     variant: 'outlined',
-                    header: 'AI助手',
+                    header: 'AI Assistant',
                     messageRender: SmartRenderer
                   },
                   system: {
                     placement: 'start',
                     variant: 'outlined',
-                    header: '系统'
+                    header: 'System'
                   }
                 }}
                 autoScroll={true}
@@ -1045,6 +1110,30 @@ const AIModelSender: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* 思考消息区域 */}
+            {latestReasoning && latestReasoning.trim() && (
+              <div style={{
+                maxHeight: '100px',
+                overflowY: 'auto',
+                padding: '12px 16px',
+                backgroundColor: '#f6f8fa',
+                borderTop: '1px solid #e1e4e8',
+                borderBottom: '1px solid #e1e4e8',
+                fontSize: '12px',
+                color: '#586069',
+                fontStyle: 'italic',
+                lineHeight: 1.5
+              }}>
+                <div style={{ fontWeight: 600, marginBottom: '6px', color: '#24292e' }}>
+                  🧠 Reasoning:
+                </div>
+                <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                  {latestReasoning}
+                </div>
+                <div ref={reasoningEndRef} />
+              </div>
+            )}
+
             {/* 聊天操作区域 */}
             <div className="chat-actions">
               {(() => {
@@ -1064,7 +1153,7 @@ const AIModelSender: React.FC = () => {
                   borderBottom: '1px solid #e1e5e9',
                   width: '100%'
                 }}>
-                  <Tooltip title="AI回答被长度限制中断，请点击继续完成回答">
+                  <Tooltip title="AI answer interrupted due to length limit, please click to continue to complete the answer">
                     <Button 
                       type="primary" 
                       size="small"
@@ -1072,7 +1161,7 @@ const AIModelSender: React.FC = () => {
                       disabled={loading}
                       icon={<RobotOutlined />}
                     >
-                      继续回答
+                      Continue Answer
                     </Button>
                   </Tooltip>
                 </div>
@@ -1102,10 +1191,10 @@ const AIModelSender: React.FC = () => {
                         sendChatMessage();
                       }}
                       onCancel={() => {
-                        console.log('🎯 onCancel 被直接调用！');
+                        console.log('🎯 onCancel is directly called!');
                         cancelCurrentRequest();
                       }}
-                      placeholder="输入你的消息... 输入 / 获取建议... (Shift+Enter换行，Enter发送)"
+                       placeholder="Enter your message... Type / for suggestions... (Shift+Enter for new line, Enter to send)"
                       // disabled={loading}
                       loading={loading}
                       // submitType="enter"
@@ -1138,13 +1227,18 @@ const AIModelSender: React.FC = () => {
                               </Badge>
                               <Divider type="vertical" />
                               <label>
-                                流式聊天
+                                Stream
                                 <Switch size="small"  checked={streamMode} onChange={(checked) => setStreamMode(checked)} />
                               </label>
                               <Divider type="vertical" />
                               <label>
-                                自动继续
+                                Continue
                                 <Switch size="small" checked={autoContinueEnabled} onChange={(checked) => setAutoContinueEnabled(checked)} />
+                              </label>
+                              <Divider type="vertical" />
+                              <label>
+                                Reasoning
+                                <Switch size="small" checked={showReasoning} onChange={(checked) => setShowReasoning(checked)} />
                               </label>
                             </Flex>
                             <Flex align="center">

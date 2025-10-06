@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AIModelConfModalProps, AIModelConfig, AIProvider, AIProviderMeta, ProviderConfigField } from '../types';
 import { generateId } from '../utils/storage';
 import { validateProviderConfig } from '../utils/providers';
+import { getMessages } from '../utils/i18n';
 import '../styles/index.css';
 
 export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
@@ -11,11 +12,14 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
   onSave,
   supportedProviders,
   theme = 'system',
+  locale = 'en',
   className = '',
   customClassName = '',
   style,
   onShowManager
 }) => {
+  // 获取国际化消息
+  const messages = getMessages(locale);
   // 表单状态
   const [formData, setFormData] = useState<Partial<AIModelConfig>>({
     name: '',
@@ -219,7 +223,7 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
       // 设置错误
       setErrors(prev => ({
         ...prev,
-        [`config.${fieldKey}`]: 'JSON格式无效'
+        [`config.${fieldKey}`]: messages.jsonFormatInvalid
       }));
       
       // 3秒后重置状态
@@ -235,13 +239,13 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
     
     // 验证基本字段
     if (!formData.name?.trim()) {
-      newErrors.name = '配置名称不能为空';
+      newErrors.name = messages.configNameRequired;
     }
     
     // 验证提供商配置
     const provider = getCurrentProvider();
     if (provider) {
-      const configResult = validateProviderConfig(provider, formData.config || {});
+      const configResult = validateProviderConfig(provider, formData.config || {}, locale);
       if (!configResult.valid) {
         configResult.errors.forEach((error, index) => {
           const field = provider.configFields?.[index];
@@ -279,7 +283,7 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
       await onSave(config);
     } catch (error) {
       setErrors({
-        submit: error instanceof Error ? error.message : '保存失败'
+        submit: error instanceof Error ? error.message : 'Save failed'
       });
     } finally {
       setSaving(false);
@@ -396,7 +400,7 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
                     className="ai-button secondary small"
                     onClick={() => handleJsonFormat(field.key, value)}
                   >
-                    🔧 格式化JSON
+                    {messages.formatJson}
                   </button>
                   <button
                     type="button"
@@ -410,13 +414,13 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
                     onClick={() => handleJsonValidate(field.key, value)}
                     disabled={jsonValidationStatus === 'success'}
                   >
-                    {jsonValidationStatus === 'success' ? '✅ 验证成功' : '✅ 验证JSON'}
+                    {jsonValidationStatus === 'success' ? messages.validationSuccess : messages.validateJson}
                   </button>
                   {jsonValidationStatus === 'success' && (
-                    <span className="validation-success-message">✓ JSON格式正确</span>
+                    <span className="validation-success-message">{messages.validationSuccessMsg}</span>
                   )}
                   {jsonValidationStatus === 'error' && (
-                    <span className="validation-error-message">✗ JSON格式错误</span>
+                    <span className="validation-error-message">{messages.validationErrorMsg}</span>
                   )}
                 </div>
               </div>
@@ -473,16 +477,15 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
   const isEditing = Boolean(editingModel);
 
   return (
-    <div className={`${getThemeClassName()} ai-modal-overlay`} onClick={onClose} onKeyDown={handleKeyDown}>
+    <div className={`${getThemeClassName()} ai-modal-overlay`} onKeyDown={handleKeyDown}>
       <div
         className={`ai-modal ${className} ${customClassName}`}
         style={style}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* 弹窗头部 */}
         <div className="ai-modal-header">
           <span className="ai-modal-title">
-            {isEditing ? '编辑AI模型' : '添加AI模型'}
+            {isEditing ? messages.editAIModel : messages.addAIModel}
           </span>
           <button className="ai-modal-close" onClick={onClose}>
             ×
@@ -494,7 +497,7 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
           {/* AI提供商选择 - 移到最前面 */}
           <div className="ai-form-group">
             <label className="ai-form-label required" htmlFor="provider">
-              AI提供商
+              {messages.aiProvider}
             </label>
             <select
               id="provider"
@@ -513,7 +516,7 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
           {/* 配置名称 */}
           <div className="ai-form-group">
             <label className="ai-form-label required" htmlFor="name">
-              配置名称
+              {messages.configName}
             </label>
             <input
               id="name"
@@ -521,10 +524,10 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
               className={`ai-form-input ${errors.name ? 'error' : ''}`}
               value={formData.name || ''}
               onChange={(e) => handleFieldChange('name', e.target.value)}
-              placeholder="输入配置名称，如：我的GPT-4配置"
+              placeholder={messages.configNamePlaceholder}
             />
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              这是您自定义的配置名称，用于识别不同的AI模型配置
+              {messages.configNameHelper}
             </div>
             {errors.name && <div className="ai-error-message">{errors.name}</div>}
           </div>
@@ -536,13 +539,13 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
               {/* 为Model字段添加特殊说明 */}
               {field.key === 'model' && (
                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                  这是传递给AI服务商的具体模型ID，如：gpt-4、deepseek-v3-1-250821等
+                  {messages.modelIdHelper}
                 </div>
               )}
               {/* 为API Key字段添加说明 */}
               {field.key === 'apiKey' && (
                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                  您的AI服务商API密钥，用于身份验证
+                  {messages.apiKeyHelper}
                 </div>
               )}
               {errors[`config.${field.key}`] && (
@@ -559,14 +562,14 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
                   className="ai-form-label"
                   htmlFor="jsonParams"
                 >
-                  额外JSON参数
+                  {messages.extraJsonParams}
                 </label>
                 <button
                   type="button"
                   className="ai-collapse-toggle"
                   onClick={toggleJsonParams}
                   aria-expanded={!jsonParamsCollapsed}
-                  title={jsonParamsCollapsed ? '点击展开' : '点击折叠'}
+                  title={jsonParamsCollapsed ? messages.clickToExpand : messages.clickToCollapse}
                 >
                   <span className="ai-collapse-icon">
                     {jsonParamsCollapsed ? '▶' : '▼'}
@@ -576,42 +579,42 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
               {!jsonParamsCollapsed && (
                 <div className="ai-jsonarea-content">
                   <textarea
-                    id="jsonParams"
-                    className={`ai-form-textarea ${errors['config.jsonParams'] ? 'error' : ''}`}
-                    value={formData.config?.jsonParams || ''}
-                    onChange={(e) => handleConfigChange('jsonParams', e.target.value)}
-                    onBlur={(e) => handleJsonFormat('jsonParams', e.target.value)}
-                    placeholder="输入额外的JSON参数，如：temperature=1, top_p=0.7, max_tokens=32768"
-                    rows={8}
-                  />
-                  <div className="ai-jsonarea-actions">
-                    <button
-                      type="button"
-                      className="ai-button secondary small"
-                      onClick={() => handleJsonFormat('jsonParams', formData.config?.jsonParams || '')}
-                    >
-                      🔧 格式化JSON
-                    </button>
-                    <button
-                      type="button"
-                      className={`ai-button small ${
-                        jsonValidationStatus === 'success' 
-                          ? 'success' 
-                          : jsonValidationStatus === 'error' 
-                          ? 'danger' 
-                          : 'secondary'
-                      }`}
-                      onClick={() => handleJsonValidate('jsonParams', formData.config?.jsonParams || '')}
-                      disabled={jsonValidationStatus === 'success'}
-                    >
-                      {jsonValidationStatus === 'success' ? '✅ 验证成功' : '✅ 验证JSON'}
-                    </button>
-                    {jsonValidationStatus === 'success' && (
-                      <span className="validation-success-message">✓ JSON格式正确</span>
-                    )}
-                    {jsonValidationStatus === 'error' && (
-                      <span className="validation-error-message">✗ JSON格式错误</span>
-                    )}
+                  id="jsonParams"
+                  className={`ai-form-textarea ${errors['config.jsonParams'] ? 'error' : ''}`}
+                  value={formData.config?.jsonParams || ''}
+                  onChange={(e) => handleConfigChange('jsonParams', e.target.value)}
+                  onBlur={(e) => handleJsonFormat('jsonParams', e.target.value)}
+                  placeholder={messages.extraJsonParamsPlaceholder}
+                  rows={8}
+                />
+                <div className="ai-jsonarea-actions">
+                  <button
+                    type="button"
+                    className="ai-button secondary small"
+                    onClick={() => handleJsonFormat('jsonParams', formData.config?.jsonParams || '')}
+                  >
+                    {messages.formatJson}
+                  </button>
+                  <button
+                    type="button"
+                    className={`ai-button small ${
+                      jsonValidationStatus === 'success' 
+                        ? 'success' 
+                        : jsonValidationStatus === 'error' 
+                        ? 'danger' 
+                        : 'secondary'
+                    }`}
+                    onClick={() => handleJsonValidate('jsonParams', formData.config?.jsonParams || '')}
+                    disabled={jsonValidationStatus === 'success'}
+                  >
+                    {jsonValidationStatus === 'success' ? messages.validationSuccess : messages.validateJson}
+                  </button>
+                  {jsonValidationStatus === 'success' && (
+                    <span className="validation-success-message">{messages.validationSuccessMsg}</span>
+                  )}
+                  {jsonValidationStatus === 'error' && (
+                    <span className="validation-error-message">{messages.validationErrorMsg}</span>
+                  )}
                   </div>
                 </div>
               )}
@@ -624,7 +627,7 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
           {/* 启用状态 */}
           <div className="ai-form-group">
             <label className="ai-form-label" htmlFor="enabled">
-              启用状态
+              {messages.enabledStatus}
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <label className="ai-switch">
@@ -638,7 +641,7 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
                 <span className="ai-switch-slider"></span>
               </label>
               <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                {formData.enabled ? '已启用' : '已禁用'}
+                {formData.enabled ? messages.enabled : messages.disabled}
               </span>
             </div>
           </div>
@@ -668,11 +671,11 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
               >
                 <path d="M511.9935 699.733c-102.4 0-187.733-85.333-187.733-187.733s85.333-187.733 187.733-187.733S699.7265 409.6 699.7265 512s-85.333 187.733-187.733 187.733z m472.177-250.311c-5.689-22.756-22.756-39.822-45.511-45.511l-11.378-5.689c-34.133-11.378-68.267-34.133-91.022-68.267s-22.756-73.956-17.067-113.778l5.689-11.378c5.689-17.067 0-45.511-17.067-62.578 0 0-17.067-11.378-56.889-34.133s-56.889-28.444-56.889-28.444c-22.756-5.689-45.511 0-62.578 17.067l-11.378 11.378c-28.444 22.756-68.267 39.822-108.089 39.822s-79.644-17.067-108.089-39.822l-5.689-17.067c-17.067-11.378-45.511-22.756-62.578-11.378 0 0-17.067 5.689-56.889 28.444s-56.889 34.133-56.889 34.133c-17.067 17.067-28.444 39.822-22.756 62.578l5.689 17.067c11.378 34.133 5.689 73.956-17.067 113.778-22.756 28.444-51.2 51.2-91.022 62.578l-11.378 5.689c-22.756 0-39.822 22.756-45.511 45.511 0 0-5.689 17.067-5.689 62.578s5.689 62.578 5.689 62.578c5.689 22.756 22.756 39.822 45.511 45.511l11.378 5.689c34.133 11.378 68.267 34.133 91.022 68.267s22.756 73.956 17.067 113.778l-5.689 11.378c-5.689 17.067 0 45.511 17.067 62.578 0 0 17.067 11.378 56.889 34.133s56.889 28.444 56.889 28.444c22.756 5.689 45.511 0 62.578-17.067l11.378-11.378c28.444-28.444 62.578-39.822 108.089-39.822 39.822 0 79.644 17.067 108.089 39.822l11.378 11.378c17.067 17.067 39.822 22.756 62.578 17.067 0 0 17.067-5.689 56.889-28.444s56.889-34.133 56.889-34.133 22.756-39.822 17.067-62.578l-5.689-17.067c-11.378-34.133-5.689-73.956 17.067-108.089s51.2-56.889 91.022-68.267l17.067-5.689c22.756-5.689 39.822-22.756 45.511-45.511 0 0 5.689-17.067 5.689-62.578-5.689-45.511-11.378-62.578-11.378-62.578z"></path>
               </svg>
-              管理配置
+              {messages.manageConfigs}
             </button>
           )}
           <button className="ai-button secondary" onClick={onClose}>
-            取消
+            {messages.cancel}
           </button>
           <button
             className="ai-button primary"
@@ -682,10 +685,10 @@ export const AIModelConfModal: React.FC<AIModelConfModalProps> = ({
             {saving ? (
               <>
                 <div className="ai-loading-spinner"></div>
-                保存中...
+                {messages.saving}
               </>
             ) : (
-              '保存'
+              messages.save
             )}
           </button>
         </div>

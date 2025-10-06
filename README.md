@@ -40,8 +40,6 @@ This AI Model Application Suite is developed in TypeScript and published as npm 
 
 ## 📦 Installation
 
-**Note: Currently for personal use and optimization, not published as npm package**
-
 ```bash
 npm install ai-model-application-suite
 # or
@@ -58,23 +56,27 @@ npm install react react-dom
 yarn add react react-dom
 ```
 
-### AI SDK Dependencies (Optional)
+### AI Provider Dependencies
 
-Install corresponding AI SDKs as needed:
+**Default Dependencies (Included):**
+- `openai` - Supports OpenAI, DeepSeek, Azure, Ollama, Volcengine and other OpenAI API compatible services
+
+**Optional Dependencies (Install as needed):**
+
+Install corresponding AI Providers as needed:
 
 ```bash
-# OpenAI
-npm install @ai-sdk/openai
-
-# DeepSeek
-npm install @ai-sdk/deepseek
-
-# And many more others
+# Google Gemini (if using)
+npm install @google/genai
+# or
+yarn add @google/genai
 ```
+
+> **Note**: If you try to use a Provider without installing its dependency, the system will prompt you to install the corresponding package.
 
 ## 🎯 Quick Start
 
-### 🆕 New API Usage (v0.0.4 Recommended)
+### 🆕 New API Usage (v0.0.5 Recommended)
 
 #### Using React Hook - Simplest Way
 
@@ -499,14 +501,15 @@ function CustomStyleExample() {
 
 | Provider | Enum Value | NPM Package | Description |
 |----------|------------|-------------|-------------|
-| OpenAI | AIProvider.OPENAI | @ai-sdk/openai | OpenAI GPT models |
-| DeepSeek | AIProvider.DEEPSEEK | @ai-sdk/deepseek | DeepSeek AI models |
-| Anthropic | AIProvider.ANTHROPIC | @ai-sdk/anthropic | Anthropic Claude models |
-| Google | AIProvider.GOOGLE | @ai-sdk/google | Google Gemini models |
-| Mistral | AIProvider.MISTRAL | @ai-sdk/mistral | Mistral AI models |
-| Cohere | AIProvider.COHERE | @ai-sdk/cohere | Cohere AI models |
-| Azure | AIProvider.AZURE | @ai-sdk/azure | Azure OpenAI service |
-| Ollama | AIProvider.OLLAMA | ollama | Local Ollama models |
+| OpenAI | AIProvider.OPENAI | openai (default) | OpenAI GPT models |
+| OpenAI Compatible | AIProvider.OPENAILIKE | openai (default) | OpenAI API compatible models |
+| DeepSeek | AIProvider.DEEPSEEK | openai (default) | DeepSeek AI models |
+| Google Gemini | AIProvider.GOOGLE | @google/genai (optional) | Google Gemini models |
+| Azure | AIProvider.AZURE | openai (default) | Azure OpenAI service |
+| Volcengine | AIProvider.VOLCENGINE | built-in | Volcengine Doubao models |
+| Aliyun Bailian | AIProvider.ALIYUN_BAILIAN | built-in | Aliyun Bailian platform |
+| Anthropic | AIProvider.ANTHROPIC | - (no implementation plan) | Anthropic Claude models |
+| Ollama | AIProvider.OLLAMA | openai (default) | Local Ollama models |
 
 ### AI Message Transceiver Supported Providers
 
@@ -854,7 +857,29 @@ Welcome to submit Issues and Pull Requests!
 
 ## 📝 Changelog
 
-### v0.0.4 (Latest)
+### v0.0.5 (Latest)
+- 🆕 **Added Google Gemini Support** - Support Google Gemini models through optional dependency `@google/genai`
+  - Support for Gemini Pro, Gemini 1.5 Pro, Gemini 1.5 Flash and other models
+  - Full support for chat and streaming responses
+  - Smart message format conversion, supports system prompts
+  - Install only when needed, no extra dependencies if not using
+- 🔧 **Optimized Dependency Management** - Only install `openai` package by default, other Providers install on demand
+  - Reduced package size, improved installation speed
+  - Clear dependency instructions and error messages
+  - Support for optional peerDependencies configuration
+- 🆕 **Added Reasoning Display** - Support displaying AI's reasoning content (reasoning_content)
+  - Independent reasoning message area, doesn't interfere with main content
+  - Real-time streaming display of reasoning process
+  - Controllable show/hide
+  - Auto-scroll to latest reasoning content
+- 🐛 **Fixed Continue Response Issue** - Fixed content accumulation error during manual continuation
+  - Correctly accumulate newly received content
+  - Support reasoning display during continuation
+  - Improved content merging logic
+- 🗑️ **Removed Unsupported Providers** - Removed Mistral and Cohere related code and documentation
+- 📝 **Improved Documentation** - Updated dependency instructions, Provider list and usage examples
+
+### v0.0.4
 - 🆕 **Added Code Block Line Wrapping Support** - Fixed AI output code block width overflow issues, supports inline line wrapping display
   - Added `custom-code-block.css` style file, specifically handles code block line wrapping
   - Optimized `SyntaxHighlighter` configuration, added `whiteSpace: 'pre-wrap'` and `wordBreak: 'break-word'`
